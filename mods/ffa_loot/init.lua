@@ -2,7 +2,7 @@ local diamond_chest_opened = {}
 
 local regular_loot = {
     {name = "skywars:leaves", chance = 0.40, max = 16},
-    {name = "default:apple", chance = 0.15, max = 6},
+    {name = "default:apple", chance = 0.15, max = 4},
     {name = "xdecor:baricade", chance = 0.1, max = 3},
 
     {name = "default:sword_steel", chance = 0.3, max = 1},
@@ -15,9 +15,10 @@ local regular_loot = {
     {name = "3d_armor:boots_steel", chance = 0.2, max = 1},
     {name = "shields:shield_steel", chance = 0.2, max = 1},
 
-    {name = "ctf_ranged:ammo", chance = 0.20, max = 4},
-    {name = "ctf_ranged:pistol", chance = 0.60, max = 1},
-    {name = "shooter_crossbow:arrow_white", chance = 0.40, max = 8},
+    {name = "ctf_ranged:ammo", chance = 0.10, max = 4},
+    {name = "ctf_ranged:pistol", chance = 0.20, max = 1},
+    {name = "shooter_crossbow:arrow_white", chance = 0.15, max = 8},
+    {name = "shooter_crossbow:crossbow", chance = 0.10, max = 1},
     {name = "skywars:fireball", chance = 0.10, max = 2},
 }
 

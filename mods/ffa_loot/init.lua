@@ -371,7 +371,7 @@ core.register_node("ffa_loot:diamond_chest", {
             core.chat_send_all(("%s has opened a %s"):format(cn, core.colorize("#12e8ec", "Diamond Chest")))
         end
 
-        local p = vector.new(clicker:get_pos().x,clicker:get_pos().y,clicker:get_pos().z-1)
+        local p = vector.new(pos.x, pos.y+1, pos.z)
         --core.chat_send_player(cn, "<" .. core.colorize("#31C950", "Forgotten Player") .. "> I seee you")
         skywars.spawn_fp(p)
 

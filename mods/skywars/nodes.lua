@@ -15,10 +15,12 @@ skywars.whitelist = {
 }
 
 local protected_mods = {
+	"bakedclay",
     "default",
     "doors",
 	"farming",
 	"flowers",
+	"stainedglass",
     "stairs",
     "vessels",
 	"walls",

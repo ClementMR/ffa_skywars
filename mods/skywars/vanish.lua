@@ -91,6 +91,12 @@ core.register_chatcommand("vanish", {
 core.register_on_joinplayer(function(player)
     if is_vanished(player) then
         clear_properties(player)
+
+		core.after(0.5, function()
+			if playertag_available then
+				playertag.remove(player)
+			end
+    	end)
 	end
 end)
 

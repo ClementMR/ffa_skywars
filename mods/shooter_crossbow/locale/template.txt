@@ -1,0 +1,13 @@
+# textdomain: shooter_crossbow
+
+@1 Arrow=
+Crossbow=
+White=
+Grey =
+Black=
+Red=
+Yellow=
+Green=
+Cyan=
+Blue=
+Magenta=

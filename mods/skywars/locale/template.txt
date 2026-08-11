@@ -1,0 +1,16 @@
+# textdomain: skywars
+
+Fireball=
+Shadow Sword=
+You must defeat the @1 to open this chest!=
+The @1 was beaten by @2!=
+Forgotten Player=
+Cleaning the area=
+Cleaning area...=
+Print the remaining time of the next cleaning=
+[Cleanup]=
+@1 You have been tped!=
+@1@2s left!=
+(Unbreakable)=
+@1Armor Protection @2@3Armor Healing @4=
+Damage @1@2Cooldown @3=

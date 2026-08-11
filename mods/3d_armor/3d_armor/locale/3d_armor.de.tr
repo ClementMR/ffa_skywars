@@ -1,0 +1,66 @@
+# textdomain: 3d_armor
+
+Your @1 is almost broken!=@1 ist fast kaputt!
+Your @1 got destroyed!=@1 wurde zerstört!
+
+Admin Helmet=Adminhelm
+Admin Chestplate=Adminbrustplatte
+Admin Leggings=Adminhose
+Admin Boots=Adminstiefel
+Admin Shield=Adminschild
+
+Nether Helmet=Netherhelm
+Nether Chestplate=Netherbrustplatte
+Nether Leggings=Netherhose
+Nether Boots=Netherstiefel
+Nether Shield=Netherschild
+
+Crystal Helmet=Kristallhelm
+Crystal Chestplate=Kristallbrustplatte
+Crystal Leggings=Kristallhose
+Crystal Boots=Kristallstiefel
+Crystal Shield=Kristallschild
+
+Mithril Helmet=Mithrilhelm
+Mithril Chestplate=Mithrilbrustplatte
+Mithril Leggings=Mithrilhose
+Mithril Boots=Mithrilstiefel
+Mithril Shield=Mithrilschild
+
+Bronze Helmet=Bronzehelm
+Bronze Chestplate=Bronzebrustplatte
+Bronze Leggings=Bronzehose
+Bronze Boots=Bronzestiefel
+Bronze Shield=Bronzeschild
+
+Diamond Helmet=Diamanthelm
+Diamond Chestplate=Diamantbrustplatte
+Diamond Leggings=Diamanthose
+Diamond Boots=Diamantstiefel
+Diamond Shield=Diamantschild
+
+Gold Helmet=Goldhelm
+Gold Chestplate=Goldbrustplatte
+Gold Leggings=Goldhose
+Gold Boots=Goldstiefel
+Gold Shield=Goldschild
+
+Steel Helmet=Stahlhelm
+Steel Chestplate=Stahlbrustplatte
+Steel Leggings=Stahlhose
+Steel Boots=Stahlstiefel
+Steel Shield=Stahlschild
+
+Cactus Helmet=Kaktushelm
+Cactus Chestplate=Kaktusbrustplatte
+Cactus Leggings=Kaktushose
+Cactus Boots=Kaktusstiefel
+Cactus Shield=Kaktusschild
+Enhanced Cactus Shield=Verstärkter Kaktusschild
+
+Wood Helmet=Holzhelm
+Wood Chestplate=Holzbrustplatte
+Wood Leggings=Holzhose
+Wood Boots=Holzstiefel
+Wooden Shield=Holzschild
+Enhanced Wood Shield=Verstärkter Holzschild

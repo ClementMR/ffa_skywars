@@ -1,0 +1,93 @@
+[3d_armor]
+
+armor_material_steel (Enable steel armor) bool true
+armor_material_bronze (Enable bronze armor) bool true
+armor_material_gold (Enable gold armor) bool true
+armor_material_diamond (Enable diamond armor) bool true
+
+# Increase this if you get initialization glitches when a player first joins.
+armor_init_delay (Initialization delay) int 2
+
+# How often player armor items are updated.
+armor_update_time (Armor refresh rate [seconds]) int 1
+
+# Drop armor when a player dies.
+armor_drop (Drop armor on death) bool true
+
+# Pulverize armor when a player dies, overrides armor_drop.
+armor_destroy (Pulverize armor on death) bool false
+
+# You can use this to increase or decrease overall armor effectiveness,
+# eg: level_multiplier = 0.5 will reduce armor level by half.
+armor_level_multiplier (Armor effectiveness multiplier) float 1
+
+# You can use this to increase or decrease overall armor healing,
+# eg: armor_heal_multiplier = 0 will disable healing altogether.
+armor_heal_multiplier (Armor healing multiplier) float 1
+
+# Armor set item names, remove or add items to include them or remove them from whats considered an Armor set.
+armor_set_elements (Armor set items) string head torso legs feet shield
+
+# Bonus multiplier when wearing armor set, set to the same as armor_level_multiplier to disable
+armor_set_multiplier (Armor Set Bonus multiplier) float 1.1
+
+# Enable water protection (periodically restores breath when activated).
+armor_water_protect (Enable water protection) bool true
+
+# Enable fire protection (defaults true if using ethereal mod).
+armor_fire_protect (Enable fire protection) bool false
+
+# Enable fire damage from torches (defaults true if using ethereal mod).
+armor_fire_protect_torch (Enable fire protection torch damage) bool false
+
+# Enable punch damage effects.
+armor_punch_damage (Enable damage effects) bool true
+
+# Armor is not visible on player model when enabled.
+armor_transparent (Transparent armor) bool false
+
+shields_disable_sounds (Disable shield sounds) bool false
+
+[Default]
+# Whether lavacooling should be enabled.
+enable_lavacooling (Enable Lavacooling) bool true
+
+# If enabled, fences and walls cannot be jumped over.
+enable_fence_tall (Enable Fence Tall) bool false
+
+[FFA Timers]
+# Change the combat timer
+combat_timer (Combat Timer) int 8
+
+# Change the immunity timer
+immunity_timer (Immunity Timer) int 14
+
+[Fire]
+# Whether fire should be enabled. If disabled, 'basic_flame' nodes will
+# disappear.
+# 'permanent_flame' nodes will remain with either setting.
+enable_fire (Enable Fire) bool true
+
+# Enable flame sound.
+flame_sound (Flame Sound) bool true
+
+[SkinsDB]
+# texture filename seperator, default "_"
+# see skindsdb/textures/readme.txt to avoid playername with underscore problem
+skinsdb_fsep (Texture Filename Seperator) enum _ _,.
+
+[Stairs]
+# Enable the stairs mod ABM that replaces the old 'upside down'
+# stair and slab nodes in old maps with the new param2 versions.
+enable_stairs_replace_abm (Enable Stairs ABM) bool false
+
+[TNT]
+# The radius in which nodes will be destroyed by a TNT explosion.
+tnt_radius (TNT radius) int 3 0
+
+[Weather]
+# Enable cloud variation by the 'weather' mod.
+# Non-functional in V6 or Singlenode mapgens.
+enable_weather (Enable Weather) bool true
+
+enable_tnt (Enable TNT) bool false

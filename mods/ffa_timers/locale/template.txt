@@ -1,0 +1,7 @@
+# textdomain: ffa_timers
+
+You are in combat=
+You are immune=
+[Immunity] =
+Your immunity has been lifted!=
+Player @1 is immune!=

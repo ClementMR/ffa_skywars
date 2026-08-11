@@ -1,0 +1,66 @@
+# textdomain: 3d_armor
+
+Your @1 is almost broken!=Ваш предмет «@1» почти сломан!
+Your @1 got destroyed!=Ваш предмет «@1» был уничтожен!
+
+Admin Helmet=Шлем Админа
+Admin Chestplate=Нагрудник Админа
+Admin Leggings=Поножи Админа
+Admin Boots=Ботинки Админа
+Admin Shield=Щит Админа
+
+Nether Helmet=Незерский Шлем
+Nether Chestplate=Незерский Нагрудник
+Nether Leggings=Незерские Поножи
+Nether Boots=Незерские Ботинки
+Nether Shield=Незерский Щит
+
+Crystal Helmet=Кристальный Шлем
+Crystal Chestplate=Кристальный Нагрудник
+Crystal Leggings=Кристальные Поножи
+Crystal Boots=Кристальные Ботинки
+Crystal Shield=Кристальный Щит
+
+Mithril Helmet=Мифриловый Шлем
+Mithril Chestplate=Мифриловый Нагрудник
+Mithril Leggings=Мифриловые Поножи
+Mithril Boots=Мифриловые Ботинки
+Mithril Shield=Мифриловый Щит
+
+Bronze Helmet=бронзовый шлем
+Bronze Chestplate=бронзовый бронежилет
+Bronze Leggings=бронзовые гамаши
+Bronze Boots=бронзовые ботинки
+Bronze Shield=бронзовый щит
+
+Diamond Helmet=алмазный шлем
+Diamond Chestplate=алмазный бронежилет
+Diamond Leggings=алмазные гамаши
+Diamond Boots=алмазные ботинки
+Diamond Shield=алмазный щит
+
+Gold Helmet=золотой шлем
+Gold Chestplate=золотой бронежилет
+Gold Leggings=золотые гамаши
+Gold Boots=золотые ботинки
+Gold Shield=золотой щит
+
+Steel Helmet=стальной шлем
+Steel Chestplate=стальной бронежилет
+Steel Leggings=стальные гамаши
+Steel Boots=стальные ботинки
+Steel Shield=стальной щит
+
+Cactus Helmet=Кактусовый Шлем
+Cactus Chestplate=Кактусовый Нагрудник
+Cactus Leggings=Кактусовые Поножи
+Cactus Boots=Кактусовые Ботинки
+Cactus Shield=Кактусовый Щит
+Enhanced Cactus Shield=Улучшенный Кактусовый Щит
+
+Wood Helmet=Деревянный Шлем
+Wood Chestplate=Деревянный Нагрудник
+Wood Leggings=Деревянные Поножи
+Wood Boots=Деревянные Ботинки
+Wooden Shield=Деревянный Щит
+Enhanced Wood Shield=Улучшенный Деревянный Щит

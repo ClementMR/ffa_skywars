@@ -1,0 +1,66 @@
+# textdomain: 3d_armor
+
+Your @1 is almost broken!=
+Your @1 got destroyed!=
+
+Admin Helmet=
+Admin Chestplate=
+Admin Leggings=
+Admin Boots=
+Admin Shield=
+
+Nether Helmet=
+Nether Chestplate=
+Nether Leggings=
+Nether Boots=
+Nether Shield=
+
+Crystal Helmet=
+Crystal Chestplate=
+Crystal Leggings=
+Crystal Boots=
+Crystal Shield=
+
+Mithril Helmet=
+Mithril Chestplate=
+Mithril Leggings=
+Mithril Boots=
+Mithril Shield=
+
+Bronze Helmet=
+Bronze Chestplate=
+Bronze Leggings=
+Bronze Boots=
+Bronze Shield=
+
+Diamond Helmet=
+Diamond Chestplate=
+Diamond Leggings=
+Diamond Boots=
+Diamond Shield=
+
+Gold Helmet=
+Gold Chestplate=
+Gold Leggings=
+Gold Boots=
+Gold Shield=
+
+Steel Helmet=
+Steel Chestplate=
+Steel Leggings=
+Steel Boots=
+Steel Shield=
+
+Cactus Helmet=
+Cactus Chestplate=
+Cactus Leggings=
+Cactus Boots=
+Cactus Shield=
+Enhanced Cactus Shield=
+
+Wood Helmet=
+Wood Chestplate=
+Wood Leggings=
+Wood Boots=
+Wooden Shield=
+Enhanced Wood Shield=

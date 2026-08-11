@@ -26,29 +26,6 @@ core.register_tool("maptools:pick_admin", {
 	description = S("Admin Pickaxe"),
 	range = 20,
 	inventory_image = "maptools_adminpick.png",
-	groups = {not_in_creative_inventory = maptools.creative},
 	tool_capabilities = pick_admin_toolcaps,
 	on_drop = function() return end,
 })
-
---[[
-core.register_on_punchnode(function(pos, node, puncher)
-	if puncher:get_wielded_item():get_name() == "maptools:pick_admin"
-	and core.get_node(pos).name ~= "air" then
-		core.log(
-			"action",
-			puncher:get_player_name() ..
-			" digs " ..
-			core.get_node(pos).name ..
-			" at " ..
-			core.pos_to_string(pos) ..
-			" using an Admin Pickaxe."
-		)
-		-- The node is removed directly, which means it even works
-		-- on non-empty containers and group-less nodes
-		core.remove_node(pos)
-		-- Run node update actions like falling nodes
-		core.check_for_falling(pos)
-	end
-end)
-]]

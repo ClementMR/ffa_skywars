@@ -16,7 +16,7 @@ core.register_node("maptools:black", {
 	tiles = {"black.png"},
 	drop = "",
 	post_effect_color = {a=255, r=0, g=0, b=0},
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	sounds = default.node_sound_stone_defaults(),
 	on_blast = function() end,
 })
@@ -28,7 +28,7 @@ core.register_node("maptools:white", {
 	tiles = {"white.png"},
 	drop = "",
 	post_effect_color = {a=255, r=128, g=128, b=128},
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	sounds = default.node_sound_stone_defaults(),
 	on_blast = function() end,
 })
@@ -43,7 +43,7 @@ core.register_node("maptools:playerclip", {
 	pointable = false,
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -63,7 +63,7 @@ core.register_node("maptools:fake_walkable", {
 		},
 	},
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -76,7 +76,7 @@ core.register_node("maptools:fullclip", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -95,7 +95,7 @@ core.register_node("maptools:fake_walkable_pointable", {
 		},
 	},
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -108,7 +108,7 @@ core.register_node("maptools:ignore_like", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -122,7 +122,7 @@ core.register_node("maptools:ignore_like_no_clip", {
 	walkable = false,
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -137,7 +137,7 @@ core.register_node("maptools:ignore_like_no_point", {
 	pointable = false,
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -152,7 +152,7 @@ core.register_node("maptools:ignore_like_no_clip_no_point", {
 	pointable = false,
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -173,7 +173,6 @@ core.register_node("maptools:fullclip_face", {
 	drop = "",
 	groups = {
 		unbreakable = 1,
-		not_in_creative_inventory = maptools.creative,
 		fall_damage_add_percent = -100,
 	},
 	on_blast = function() end,
@@ -196,7 +195,6 @@ core.register_node("maptools:playerclip_bottom", {
 	drop = "",
 	groups = {
 		unbreakable = 1,
-		not_in_creative_inventory = maptools.creative,
 		fall_damage_add_percent = -100,
 	},
 	on_blast = function() end,
@@ -219,7 +217,6 @@ core.register_node("maptools:playerclip_top", {
 	drop = "",
 	groups = {
 		unbreakable = 1,
-		not_in_creative_inventory = maptools.creative,
 		fall_damage_add_percent = -100,
 	},
 	on_blast = function() end,
@@ -243,7 +240,6 @@ for pusher_num=1,10,1 do
 		drop = "",
 		groups = {
 			unbreakable = 1,
-			not_in_creative_inventory = maptools.creative,
 			fall_damage_add_percent = -100,
 			bouncy = pusher_num * 100,
 		},
@@ -263,7 +259,7 @@ core.register_node("maptools:lightbulb", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -278,7 +274,7 @@ core.register_node("maptools:nobuild", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -292,7 +288,7 @@ core.register_node("maptools:nointeract", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -308,7 +304,7 @@ core.register_node("maptools:climb", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -325,7 +321,7 @@ core.register_node("maptools:damage_" .. damage_num, {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 end
@@ -342,7 +338,7 @@ core.register_node("maptools:kill", {
 	paramtype = "light",
 	sunlight_propagates = true,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	on_blast = function() end,
 })
 
@@ -355,7 +351,7 @@ core.register_node("maptools:smoke", {
 	walkable = false,
 	paramtype = "light",
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	post_effect_color = {a=192, r=96, g=96, b=96},
 	on_blast = function() end,
 })
@@ -376,7 +372,7 @@ core.register_node("maptools:ladder", {
 		type = "wallmounted",
 	},
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	sounds = default.node_sound_wood_defaults(),
 	on_blast = function() end,
 })
@@ -394,7 +390,7 @@ core.register_node("maptools:permanent_fire", {
 	inventory_image = "fire_basic_flame.png",
 	light_source = 14,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	sunlight_propagates = true,
 	walkable = false,
 	damage_per_second = 4,
@@ -414,7 +410,7 @@ core.register_node("maptools:fake_fire", {
 	inventory_image = "fire_basic_flame.png",
 	light_source = 14,
 	drop = "",
-	groups = {unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {unbreakable = 1},
 	sunlight_propagates = true,
 	walkable = false,
 	on_blast = function() end,
@@ -428,7 +424,7 @@ core.register_node("maptools:igniter", {
 	paramtype = "light",
 	inventory_image = "fire_basic_flame.png",
 	drop = "",
-	groups = {igniter=2, unbreakable = 1, not_in_creative_inventory = maptools.creative},
+	groups = {igniter=2, unbreakable = 1},
 	sunlight_propagates = true,
 	pointable = false,
 	walkable = false,
@@ -450,7 +446,7 @@ core.register_node("maptools:superapple", {
 		fixed = {-0.2, -0.5, -0.2, 0.2, 0, 0.2}
 	},
 	walkable = false,
-	groups = {fleshy=3, dig_immediate=3, not_in_creative_inventory = maptools.creative},
+	groups = {fleshy=3, dig_immediate=3},
 	on_use = core.item_eat(20),
 	sounds = default.node_sound_defaults(),
 })

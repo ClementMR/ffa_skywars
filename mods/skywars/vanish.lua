@@ -96,7 +96,7 @@ core.register_on_joinplayer(function(player)
 			if playertag_available then
 				playertag.remove(player)
 			end
-    	end)
+		end)
 	end
 end)
 

@@ -40,7 +40,7 @@ local function cleanup()
     for _, player in ipairs(core.get_connected_players()) do
         if player and not core.check_player_privs(player, {creative=true}) then
             skywars.teleport_player(player)
-            core.chat_send_player(player:get_player_name(), 
+            core.chat_send_player(player:get_player_name(),
                 S("@1 You have been tped!", core.colorize("red", S("[Cleanup]"))))
             hud_api.show_front(player, S("Cleaning the area").." ...", 0xFF0000, 1)
             core.after(3, hud_api.remove, player, "front")
@@ -48,13 +48,13 @@ local function cleanup()
     end
 
     local minp = {
-        x = skywars.map_center.x - skywars.radius, 
-        y = skywars.map_center.y - skywars.radius, 
+        x = skywars.map_center.x - skywars.radius,
+        y = skywars.map_center.y - skywars.radius,
         z = skywars.map_center.z - skywars.radius
     }
     local maxp = {
-        x = skywars.map_center.x + skywars.radius, 
-        y = skywars.map_center.y + skywars.radius, 
+        x = skywars.map_center.x + skywars.radius,
+        y = skywars.map_center.y + skywars.radius,
         z = skywars.map_center.z + skywars.radius
     }
 

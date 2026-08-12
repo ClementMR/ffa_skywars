@@ -74,7 +74,7 @@ core.register_on_respawnplayer(function(player)
         return
     end
 
-    for _, item in ipairs(list) do
+    for _, item in ipairs(starter_list) do
         player:get_inventory():add_item("main", item)
     end
 end)

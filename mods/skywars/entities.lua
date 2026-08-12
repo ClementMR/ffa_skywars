@@ -94,7 +94,7 @@ mobs:register_mob("skywars:forgotten_player", {
             end
 
             if ran(0, 4) == 1 and #valid_pos > 0 then
-                mobs:effect(ent_pos, 10, "default_obsidian_shard.png", 
+                mobs:effect(ent_pos, 10, "default_obsidian_shard.png",
                     1, 1.5, 3, 10, 1, true)
 
                 core.sound_play("skywars_forgotten_player", {
@@ -104,7 +104,7 @@ mobs:register_mob("skywars:forgotten_player", {
                 })
 
                 ent:set_pos(valid_pos[ran(1, #valid_pos)])
-                mobs:effect(hitter_pos, 10, "default_mese_crystal_fragment.png", 
+                mobs:effect(hitter_pos, 10, "default_mese_crystal_fragment.png",
                     1, 1.5, 3, 10, 1, true)
             end
         end

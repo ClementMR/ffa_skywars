@@ -15,11 +15,11 @@ core.register_chatcommand("killme", {
 
 				-- There doesn't seem to be a way to get a default spawn pos
 				-- from the lua API
-				return false, S("No static_spawnpoint defined")
+				return false, "No static_spawnpoint defined"
 			end
 		else
 			-- Show error message if used when not logged in, eg: from IRC mod
-			return false, S("You need to be online to be killed!")
+			return false, "You need to be online to be killed!"
 		end
 	end
 })

@@ -21,7 +21,7 @@ local positions = {
     {x = 9944, y = 307, z = 4867},
 }
 
-local list = {
+local starter_list = {
     "default:sword_steel",
     "skywars:leaves 8"
 }
@@ -30,9 +30,8 @@ function skywars.teleport_player(player)
     player:set_pos(positions[math.random(#positions)])
 end
 
-
 core.register_on_newplayer(function(player)
-    for _, item in ipairs(list) do
+    for _, item in ipairs(starter_list) do
         player:get_inventory():add_item("main", item)
     end
 end)
@@ -79,7 +78,6 @@ core.register_on_respawnplayer(function(player)
         player:get_inventory():add_item("main", item)
     end
 end)
-
 
 core.register_on_placenode(function(pos, newnode, placer, oldnode, itemstack, pointed_thing)
     if core.is_creative_enabled(placer:get_player_name()) then

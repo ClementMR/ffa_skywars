@@ -159,13 +159,19 @@ core.register_entity("playertag:tag", {
     }
 })
 
+if core.global_exists("armor") then
+	armor:register_on_update(function(player, index, stack)
+		add_entity_tag_retry(player, 0)
+	end)
+end
+
 core.register_on_joinplayer(function(player)
     local name = player:get_player_name()
 
     players[name] = {}
 
     core.after(0.1, function()
-        add_entity_tag_retry(player, 10)
+        add_entity_tag_retry(player, 3)
     end)
 end)
 

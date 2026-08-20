@@ -70,13 +70,13 @@ core.register_on_placenode(function(pos, newnode, placer)
         return
     end
 
-    -- Players may only place blocks while they and the node are in the active
-    -- map cuboid. The cleanup can therefore safely erase the whitelist there.
-    if not skywars.is_position_in_map(placer:get_pos())
-            or not skywars.is_position_in_map(pos) then
-        core.remove_node(pos)
-        return true
-    end
+	-- `pos` is the exact node position.  Checking the player's floating
+	-- ObjectRef position as well incorrectly rejected valid blocks at a cube
+	-- border (for example while standing on the outermost node).
+	if not skywars.is_position_in_map(pos) then
+		core.remove_node(pos)
+		return true
+	end
 end)
 
 local timer

@@ -83,6 +83,11 @@ function skywars.is_position_in_map(pos, map_or_id)
 	if not copy_pos(pos) then
 		return false
 	end
+	-- Most gameplay callers operate on the active map.  Keep explicit map
+	-- IDs/tables supported for the editor and rotation code.
+	if map_or_id == nil then
+		map_or_id = skywars.current_map
+	end
 	local bounds = skywars.map_bounds(map_or_id)
 	return bounds and pos.x >= bounds.min.x and pos.x <= bounds.max.x
 		and pos.y >= bounds.min.y and pos.y <= bounds.max.y

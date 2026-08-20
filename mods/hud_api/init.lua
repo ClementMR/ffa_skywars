@@ -29,7 +29,6 @@ api.layouts.top_right = api.layouts.top_right or {
 	offset = {x = -24, y = 24},
 	-- In Luanti, -1 moves an element left/up and 1 moves it right/down.
 	alignment = {x = -1, y = 1},
-	background_scale = {x = 1.55, y = 1.45},
 	text_size = {x = 1.15, y = 1.15},
 	color = 0xFFCC4D,
 	style = 1,

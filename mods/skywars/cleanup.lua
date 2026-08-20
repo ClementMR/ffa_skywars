@@ -3,7 +3,7 @@ local S = core.get_translator(core.get_current_modname())
 local cleanup_interval = math.max(60,
 	tonumber(core.settings:get("skywars_cleanup_interval")) or 2700)
 local transition_delay = math.max(0,
-	tonumber(core.settings:get("skywars_map_rotation_delay")) or 10)
+	tonumber(core.settings:get("skywars_map_rotation_delay")) or 15)
 local max_cleanup_volume = math.max(1,
 	tonumber(core.settings:get("skywars_max_cleanup_volume")) or 20000000)
 local air = core.get_content_id("air")
@@ -167,34 +167,17 @@ function skywars.cleanup_map(map_or_id, done)
 end
 
 local function cleanup_hud(player, text, duration)
-	if hud_api.show_alert then
-		hud_api.show_alert(player, "cleanup", text, {
-			duration = duration,
-			position = {x = 1, y = 0},
-			anchor = {x = -1, y = 1},
-			offset = {x = -24, y = 24},
-			color = 0xFFB020,
-		})
-	elseif hud_api.show then
-		hud_api.show(player, "cleanup", {
-			type = "text",
-			text = text,
-			number = 0xFFB020,
-			position = {x = 1, y = 0},
-			alignment = {x = -1, y = 1},
-			offset = {x = -24, y = 24},
-		}, {duration = duration})
-	else
-		hud_api.show_front(player, text, 0xFFB020, 1)
-		core.after(duration or 3, hud_api.remove, player, "front")
-	end
+	hud_api.show_alert(player, "cleanup", text, {
+		duration = duration,
+		position = {x = 1, y = 0},
+		anchor = {x = -1, y = 1},
+		offset = {x = -24, y = 24},
+		color = 0xFFB020,
+		background = false
+	})
 end
 
 local function announce_warning(seconds, next_map_id)
-	local next_name = next_map_id or S("the same map")
-	local message = S("[Map] Rotation and cleanup in @1 seconds. Next map: @2.",
-		seconds, next_name)
-	core.chat_send_all(core.colorize("#FFB020", message))
 	for _, player in ipairs(core.get_connected_players()) do
 		cleanup_hud(player, S("Map cleanup in @1s", seconds),
 			math.max(1, math.min(seconds, 8)))
@@ -249,7 +232,6 @@ function skywars.start_map_rotation(delay)
 		return false, "A map rotation or cleanup is already running."
 	end
 
-	local current_id = skywars.get_current_map_id()
 	local current_map = skywars.get_current_map()
 	if not skywars.is_map_ready(current_map) then
 		return false, "The active map is incomplete. Define its two positions and a spawn."
@@ -293,8 +275,7 @@ function skywars.start_map_rotation(delay)
 		end
 
 		transition_players(next_id)
-		core.chat_send_all(core.colorize("#6EE7B7", S("[Map] Now playing: @1. Cleaning @2.",
-			next_id, current_id)))
+		core.chat_send_all(core.colorize("#6EE7B7", S("[Map] Now playing: @1.", next_id)))
 		for _, player in ipairs(core.get_connected_players()) do
 			cleanup_hud(player, S("Now playing: @1", next_id), 5)
 		end
@@ -313,13 +294,22 @@ function skywars.start_map_rotation(delay)
 end
 
 core.register_chatcommand("cleanup", {
-	description = "Start the Skywars map rotation and cleanup.",
-	params = "[now]",
+	description = "Start the cleanup.",
 	privs = {ffa_manager = true},
 	func = function(_, param)
-		local delay = param:trim() == "now" and 0 or transition_delay
-		local ok, message = skywars.start_map_rotation(delay)
-		return ok, message or (delay > 0 and "Map rotation scheduled." or "Map rotation started.")
+		local current_map = skywars.get_current_map()
+		if not skywars.is_map_ready(current_map) then
+			return false, "The active map is incomplete. Define its two positions and a spawn."
+		end
+		local current_snapshot = snapshot_map(current_map)
+		if not current_snapshot then
+			return false, "The active map has no complete cuboid."
+		end
+
+		transition_players()
+
+		skywars.cleanup_map(current_snapshot)
+		core.chat_send_all(core.colorize("#93C5FD", S("[Map] Cleanup complete. Requested by server.")))
 	end,
 })
 

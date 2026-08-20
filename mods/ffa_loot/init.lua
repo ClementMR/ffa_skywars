@@ -1,85 +1,104 @@
 local diamond_chest_opened = {}
 
+-- Each entry is rolled once whenever a chest refills.  Keeping the odds on
+-- the entries themselves (instead of rolling the whole table several times)
+-- makes a refill predictable to balance: `chance = 0.25` means a 25% chance
+-- for that stack to be present in this chest.
+--
+-- Every chest has one guaranteed bridge material.  SkyWars should never turn
+-- into a round decided by the first player who happened to find blocks.
 local regular_loot = {
-    {name = "skywars:leaves", chance = 0.40, max = 16},
-    {name = "default:apple", chance = 0.15, max = 4},
-    {name = "xdecor:baricade", chance = 0.1, max = 3},
+    -- Building and survival
+    {name = "skywars:leaves", chance = 1.00, min = 12, max = 20},
+    {name = "skywars:wool_blue", chance = 0.45, min = 4, max = 10},
+    {name = "xdecor:baricade", chance = 0.20, min = 1, max = 3},
+    {name = "xdecor:cobweb", chance = 0.10, min = 1, max = 3},
+    {name = "default:apple", chance = 0.45, min = 2, max = 5},
+    {name = "farming:bread", chance = 0.25, min = 1, max = 3},
 
-    {name = "default:sword_steel", chance = 0.3, max = 1},
-    {name = "default:sword_bronze", chance = 0.2, max = 1},
-    {name = "default:axe_steel", chance = 0.1, max = 1},
+    -- Early combat
+    {name = "default:sword_steel", chance = 0.40, max = 1},
+    {name = "default:sword_bronze", chance = 0.25, max = 1},
+    {name = "default:axe_steel", chance = 0.12, max = 1},
+    {name = "ctf_ranged:pistol", chance = 0.25, max = 1},
+    {name = "shooter_crossbow:crossbow", chance = 0.14, max = 1},
+    {name = "shooter_crossbow:arrow_white", chance = 0.30, min = 4, max = 10},
+    {name = "ctf_ranged:ammo", chance = 0.35, min = 2, max = 5},
+    {name = "skywars:fireball", chance = 0.20, min = 1, max = 2},
 
-    {name = "3d_armor:helmet_steel", chance = 0.2, max = 1},
-    {name = "3d_armor:chestplate_steel", chance = 0.1, max = 1},
-    {name = "3d_armor:leggings_steel", chance = 0.1, max = 1},
-    {name = "3d_armor:boots_steel", chance = 0.2, max = 1},
-    {name = "shields:shield_steel", chance = 0.2, max = 1},
-
-    {name = "ctf_ranged:ammo", chance = 0.10, max = 4},
-    {name = "ctf_ranged:pistol", chance = 0.20, max = 1},
-    {name = "shooter_crossbow:arrow_white", chance = 0.15, max = 8},
-    {name = "shooter_crossbow:crossbow", chance = 0.10, max = 1},
-    {name = "skywars:fireball", chance = 0.10, max = 2},
+    -- Pieces are deliberately split across chests: a full set remains a
+    -- mid-game objective rather than an opening-chest reward.
+    {name = "3d_armor:helmet_steel", chance = 0.16, max = 1},
+    {name = "3d_armor:chestplate_steel", chance = 0.10, max = 1},
+    {name = "3d_armor:leggings_steel", chance = 0.10, max = 1},
+    {name = "3d_armor:boots_steel", chance = 0.16, max = 1},
+    {name = "shields:shield_steel", chance = 0.18, max = 1},
 }
 
 local mese_loot = {
-    {name = "skywars:acacia_leaves", chance = 0.50, max = 16},
-    {name = "skywars:wool_blue", chance = 0.1, max = 8},
-    {name = "xdecor:cobweb", chance = 0.15, max = 8},
+    -- Mese chests advance a player without guaranteeing a complete kit.
+    {name = "skywars:acacia_leaves", chance = 1.00, min = 12, max = 20},
+    {name = "skywars:wool_blue", chance = 0.60, min = 6, max = 14},
+    {name = "xdecor:cobweb", chance = 0.30, min = 2, max = 5},
+    {name = "xdecor:baricade", chance = 0.22, min = 1, max = 3},
+    {name = "default:apple", chance = 0.55, min = 3, max = 7},
+    {name = "farming:bread", chance = 0.42, min = 2, max = 5},
 
-    {name = "ctf_ranged:ammo", chance = 0.15, max = 5},
-    {name = "ctf_ranged:rifle_loaded", chance = 0.10, max = 1},
+    {name = "default:sword_mese", chance = 0.25, max = 1},
+    {name = "default:axe_mese", chance = 0.13, max = 1},
+    {name = "ctf_ranged:rifle_loaded", chance = 0.18, max = 1},
+    {name = "ctf_ranged:ammo", chance = 0.48, min = 5, max = 10},
+    {name = "fire:flint_and_steel", chance = 0.15, max = 1},
+    {name = "skywars:fireball", chance = 0.30, min = 1, max = 3},
+    {name = "tnt:tnt", chance = 0.25, min = 1, max = 3},
 
-    {name = "fire:flint_and_steel", chance = 0.10,  max = 1},
-    {name = "skywars:fireball", chance = 0.20, max = 2},
-	{name = "tnt:tnt", chance = 0.15, max = 4},
+    {name = "3d_armor:helmet_bronze", chance = 0.22, max = 1},
+    {name = "3d_armor:chestplate_bronze", chance = 0.15, max = 1},
+    {name = "3d_armor:leggings_bronze", chance = 0.15, max = 1},
+    {name = "3d_armor:boots_bronze", chance = 0.22, max = 1},
+    {name = "shields:shield_bronze", chance = 0.25, max = 1},
+    {name = "3d_armor:helmet_gold", chance = 0.16, max = 1},
+    {name = "3d_armor:chestplate_gold", chance = 0.09, max = 1},
+    {name = "3d_armor:leggings_gold", chance = 0.09, max = 1},
+    {name = "3d_armor:boots_gold", chance = 0.16, max = 1},
+    {name = "shields:shield_gold", chance = 0.13, max = 1},
 
-    {name = "default:apple", chance = 0.20, max = 8},
-
-    {name = "default:sword_mese", chance = 0.15, max = 1},
-    {name = "default:axe_mese", chance = 0.10, max = 1},
-
-    {name = "3d_armor:helmet_bronze", chance = 0.15, max = 1},
-	{name = "3d_armor:chestplate_bronze", chance = 0.10, max = 1},
-	{name = "3d_armor:leggings_bronze", chance = 0.10, max = 1},
-	{name = "3d_armor:boots_bronze", chance = 0.15, max = 1},
-	{name = "3d_armor:helmet_gold", chance = 0.15, max = 1},
-	{name = "3d_armor:chestplate_gold", chance = 0.05, max = 1},
-	{name = "3d_armor:leggings_gold", chance = 0.05, max = 1},
-	{name = "3d_armor:boots_gold", chance = 0.10, max = 1},
-    {name = "shields:shield_bronze", chance = 0.20, max = 1},
-	{name = "shields:shield_gold", chance = 0.10, max = 1},
-
-    {name = "wind_pearl:wind_pearl", chance = 0.10, max = 3},
-
-    -- Rare items
-    {name = "enderpearl:ender_pearl", chance = 0.1, max = 3},
-    {name = "ffa_loot:diamond_key", chance = 0.01, max = 1},
-    {name = "skywars:golden_apple", chance = 0.005, max = 1},
+    -- Mobility and keys create fights around the next objective. Golden
+    -- apples are intentionally reserved for Diamond Chests.
+    {name = "wind_pearl:wind_pearl", chance = 0.25, min = 1, max = 2},
+    {name = "enderpearl:ender_pearl", chance = 0.18, min = 1, max = 2},
+    {name = "ffa_loot:diamond_key", chance = 0.06, max = 1},
 }
 
 local diamond_loot = {
-    {name = "farming:bread", chance = 0.50, max = 8},
-    {name = "skywars:wool_blue", chance = 0.50, max = 8},
+    -- A key-gated chest should always offer the resources needed to survive
+    -- the fight it attracts, then offer a few high-impact rolls.
+    {name = "skywars:wool_blue", chance = 1.00, min = 10, max = 20},
+    {name = "farming:bread", chance = 0.85, min = 4, max = 8},
+    {name = "default:apple", chance = 0.30, min = 2, max = 5},
 
-    {name = "default:sword_diamond", chance = 0.25, max = 1},
-    {name = "default:axe_diamond", chance = 0.10, max = 1},
-    {name = "skywars:sword_shadow", chance = 0.001, max = 1},
+    {name = "default:sword_diamond", chance = 0.35, max = 1},
+    {name = "default:axe_diamond", chance = 0.14, max = 1},
+    {name = "ctf_ranged:smg_loaded", chance = 0.30, max = 1},
+    {name = "ctf_ranged:shotgun_loaded", chance = 0.30, max = 1},
+    {name = "ctf_ranged:rifle_loaded", chance = 0.14, max = 1},
+    {name = "ctf_ranged:ammo", chance = 0.65, min = 6, max = 12},
+    {name = "skywars:fireball", chance = 0.25, min = 1, max = 3},
 
-    {name = "ctf_ranged:smg_loaded", chance = 0.25, max = 1},
-    {name = "enderpearl:ender_pearl", chance = 0.25, max = 3},
-    {name = "wind_pearl:wind_pearl", chance = 0.20, max = 3},
-    {name = "ctf_ranged:shotgun_loaded", chance = 0.25, max = 1},
-    {name = "ctf_ranged:ammo", chance = 0.25, max = 5},
+    {name = "enderpearl:ender_pearl", chance = 0.30, min = 1, max = 3},
+    {name = "wind_pearl:wind_pearl", chance = 0.35, min = 1, max = 3},
 
-	{name = "3d_armor:helmet_diamond", chance = 0.12, max = 1},
-	{name = "3d_armor:chestplate_diamond", chance = 0.05, max = 1},
-	{name = "3d_armor:leggings_diamond", chance = 0.05, max = 1},
-	{name = "3d_armor:boots_diamond", chance = 0.12, max = 1},
-	{name = "shields:shield_diamond", chance = 0.12, max = 1},
+    {name = "3d_armor:helmet_diamond", chance = 0.20, max = 1},
+    {name = "3d_armor:chestplate_diamond", chance = 0.12, max = 1},
+    {name = "3d_armor:leggings_diamond", chance = 0.12, max = 1},
+    {name = "3d_armor:boots_diamond", chance = 0.20, max = 1},
+    {name = "shields:shield_diamond", chance = 0.20, max = 1},
 
-    {name = "skywars:totem_of_undying", chance = 0.03, max = 1},
-
+    -- Both lifesavers have the exact same 8% chance per Diamond Chest. A
+    -- Shadow Sword stays a genuine highlight rather than a standard reward.
+    {name = "skywars:golden_apple", chance = 0.08, max = 1},
+    {name = "skywars:totem_of_undying", chance = 0.08, max = 1},
+    {name = "skywars:sword_shadow", chance = 0.01, max = 1},
 }
 
 local REGULAR_CHEST = 30
@@ -92,14 +111,32 @@ local function fill_chest_random(pos, loot)
     local size = inv:get_size("main")
     inv:set_list("main", {})
 
-    for i=1, math.floor(size/16) do
-        for _, item in ipairs(loot) do
-            local r = math.random()
-            if r <= item.chance then
-                local slot = math.random(1, size)
-                local amount = math.random(1, item.max or 99)
-                inv:set_stack("main", slot, ItemStack(item.name .. " " .. amount))
-            end
+    -- Pick an unused inventory slot for every successful roll. The previous
+    -- implementation selected a slot independently and could overwrite an
+    -- earlier reward, which made both the real drop count and the advertised
+    -- probabilities unreliable.
+    local empty_slots = {}
+    for slot = 1, size do
+        empty_slots[slot] = slot
+    end
+
+    local available_slots = size
+    for _, item in ipairs(loot) do
+        if available_slots == 0 then
+            break
+        end
+
+        if core.registered_items[item.name] and math.random() <= item.chance then
+            local index = math.random(1, available_slots)
+            local slot = empty_slots[index]
+            empty_slots[index] = empty_slots[available_slots]
+            empty_slots[available_slots] = nil
+            available_slots = available_slots - 1
+
+            local minimum = item.min or 1
+            local maximum = math.max(minimum, item.max or minimum)
+            local amount = math.random(minimum, maximum)
+            inv:set_stack("main", slot, ItemStack(item.name .. " " .. amount))
         end
     end
 end
@@ -372,9 +409,9 @@ core.register_node("ffa_loot:diamond_chest", {
             core.chat_send_all(("%s has opened a %s"):format(cn, core.colorize("#12e8ec", "Diamond Chest")))
         end
 
-        local p = vector.new(pos.x, pos.y+1, pos.z)
+        --local p = vector.new(pos.x, pos.y+1, pos.z)
         --core.chat_send_player(cn, "<" .. core.colorize("#31C950", "Forgotten Player") .. "> I seee you")
-        skywars.spawn_fp(p)
+        --skywars.spawn_fp(p)
 
         core.sound_play("ffa_loot_unlock", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
         core.swap_node(pos, {name = "ffa_loot:diamond_chest_open", param2 = node.param2 })

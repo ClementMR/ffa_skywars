@@ -62,6 +62,17 @@ combat_timer (Combat Timer) int 8
 # Change the immunity timer
 immunity_timer (Immunity Timer) int 14
 
+[Skywars maps]
+# Seconds between automatic map rotations and cleanups.
+skywars_cleanup_interval (Map cleanup interval [seconds]) int 2700 60
+
+# Seconds between the rotation announcement and player teleportation.
+skywars_map_rotation_delay (Map rotation warning [seconds]) int 10 0
+
+# Maximum number of nodes that one map cleanup may scan; protects the server
+# from accidentally configured world-sized cuboids.
+skywars_max_cleanup_volume (Maximum cleanup volume [nodes]) int 20000000 1
+
 [Fire]
 # Whether fire should be enabled. If disabled, 'basic_flame' nodes will
 # disappear.

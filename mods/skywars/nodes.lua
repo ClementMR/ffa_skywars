@@ -44,16 +44,6 @@ local groups_to_keep = {
 	"cools_lava"
 }
 
-local function add_special_item(item_name, settings)
-    if not item_name or type(item_name) ~= "string" then
-        return false
-    end
-
-    special_items[item_name] = settings or {}
-
-    return true
-end
-
 local function item_exists(item_name)
     return core.registered_items[item_name] ~= nil
 end
@@ -89,10 +79,6 @@ local function is_whitelisted(node_name)
 
 	return false
 end
-
-add_special_item("default:apple", {
-	after_place_node = function(pos) core.remove_node(pos) end
-})
 
 core.register_node("skywars:leaves", {
 	description = core.registered_nodes["default:leaves"].description,

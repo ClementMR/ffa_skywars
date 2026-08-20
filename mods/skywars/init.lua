@@ -1,23 +1,28 @@
 skywars = {}
 
-skywars.map_center = core.settings:get_pos("static_spawnpoint") or {x=9959, y=300, z=4867}
-skywars.radius = 100
+core.register_privilege("ffa_manager", {
+    description = "Manage FFA",
+    give_to_singleplayer = true,
+    give_to_admin = true,
+})
 
 local modpath = core.get_modpath(core.get_current_modname())
 
 local files = {
     "cooldown",
+    "maps",
+    "map_editor",
     "player",
     "y_min",
     "nodes",
-    "golden_apple",
     "items",
     "fireball",
     "totem",
     "cleanup",
     "entities",
     "vanish",
-    "commands"
+    "commands",
+    "golden_apple"
 }
 
 for _, file in ipairs(files) do
@@ -34,10 +39,4 @@ core.hud_replace_builtin("breath", {
 	direction = 0,
 	size = {x = 24, y = 24},
 	offset = {x = 25, y= -120},
-})
-
-core.register_privilege("ffa_manager", {
-    description = "Manage FFA",
-    give_to_singleplayer = true,
-    give_to_admin = true,
 })

@@ -110,7 +110,7 @@ minetest.register_node("skywars:wool_blue", {
 
 
 core.register_node("skywars:fake_stone", {
-	description = "Fake Stone",
+	description = S("Fake Stone"),
 	tiles = {"default_stone.png"},
 	light_source = 5,
 	is_ground_content = false,

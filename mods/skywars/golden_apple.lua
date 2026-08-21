@@ -1,5 +1,7 @@
 local GOLDEN_APPLE_ABSORPTION = 4
-local absorption_huds = {}
+local ABSORPTION_HUD = "skywars:absorption"
+
+local S = core.get_translator(core.get_current_modname())
 
 local function get_absorption(player)
 	return math.max(0, player:get_meta():get_int("skywars:golden_apple_absorption"))
@@ -10,12 +12,7 @@ local function set_absorption(player, amount)
 end
 
 local function remove_absorption_hud(player)
-	local name = player:get_player_name()
-	local hud_id = absorption_huds[name]
-	if hud_id then
-		player:hud_remove(hud_id)
-		absorption_huds[name] = nil
-	end
+	hud_api.remove(player, ABSORPTION_HUD)
 end
 
 local function update_absorption_hud(player)
@@ -25,10 +22,11 @@ local function update_absorption_hud(player)
 		return
 	end
 
-	local name = player:get_player_name()
-	local hud_id = absorption_huds[name]
-	if not hud_id then
-		hud_id = player:hud_add({
+	if not hud_api.update(player, ABSORPTION_HUD, {
+		number = amount,
+		item = GOLDEN_APPLE_ABSORPTION,
+	}) then
+		hud_api.show(player, ABSORPTION_HUD, {
 			type = "statbar",
 			position = {x = 0.5, y = 1},
 			text = "heart.png^[colorize:#F3F22D:190",
@@ -39,10 +37,6 @@ local function update_absorption_hud(player)
 			offset = {x = -262, y = -112},
 			z_index = 10,
 		})
-		absorption_huds[name] = hud_id
-	else
-		player:hud_change(hud_id, "number", amount)
-		player:hud_change(hud_id, "item", GOLDEN_APPLE_ABSORPTION)
 	end
 end
 
@@ -62,7 +56,7 @@ local function apply_golden_apple(player)
 end
 
 core.register_craftitem("skywars:golden_apple", {
-	description = "Golden Apple",
+	description = S("Golden Apple"),
 	inventory_image = "skywars_golden_apple.png",
 	stack_max = 8,
 	on_use = function(itemstack, user)
@@ -108,6 +102,3 @@ core.register_on_joinplayer(function(player)
 	end)
 end)
 
-core.register_on_leaveplayer(function(player)
-	absorption_huds[player:get_player_name()] = nil
-end)

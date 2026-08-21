@@ -1,20 +1,15 @@
-local diamond_chest_opened = {}
-
 -- Each entry is rolled once whenever a chest refills.  Keeping the odds on
 -- the entries themselves (instead of rolling the whole table several times)
 -- makes a refill predictable to balance: `chance = 0.25` means a 25% chance
 -- for that stack to be present in this chest.
---
--- Every chest has one guaranteed bridge material.  SkyWars should never turn
--- into a round decided by the first player who happened to find blocks.
 local regular_loot = {
     -- Building and survival
     {name = "skywars:leaves", chance = 1.00, min = 12, max = 20},
     {name = "skywars:wool_blue", chance = 0.45, min = 4, max = 10},
     {name = "xdecor:baricade", chance = 0.20, min = 1, max = 3},
     {name = "xdecor:cobweb", chance = 0.10, min = 1, max = 3},
-    {name = "default:apple", chance = 0.45, min = 2, max = 5},
-    {name = "farming:bread", chance = 0.25, min = 1, max = 3},
+    {name = "default:apple", chance = 0.25, min = 2, max = 4},
+    {name = "farming:bread", chance = 0.05, min = 1, max = 3},
 
     -- Early combat
     {name = "default:sword_steel", chance = 0.40, max = 1},
@@ -26,8 +21,7 @@ local regular_loot = {
     {name = "ctf_ranged:ammo", chance = 0.35, min = 2, max = 5},
     {name = "skywars:fireball", chance = 0.20, min = 1, max = 2},
 
-    -- Pieces are deliberately split across chests: a full set remains a
-    -- mid-game objective rather than an opening-chest reward.
+    -- Armors
     {name = "3d_armor:helmet_steel", chance = 0.16, max = 1},
     {name = "3d_armor:chestplate_steel", chance = 0.10, max = 1},
     {name = "3d_armor:leggings_steel", chance = 0.10, max = 1},
@@ -36,13 +30,12 @@ local regular_loot = {
 }
 
 local mese_loot = {
-    -- Mese chests advance a player without guaranteeing a complete kit.
     {name = "skywars:acacia_leaves", chance = 1.00, min = 12, max = 20},
     {name = "skywars:wool_blue", chance = 0.60, min = 6, max = 14},
     {name = "xdecor:cobweb", chance = 0.30, min = 2, max = 5},
     {name = "xdecor:baricade", chance = 0.22, min = 1, max = 3},
-    {name = "default:apple", chance = 0.55, min = 3, max = 7},
-    {name = "farming:bread", chance = 0.42, min = 2, max = 5},
+    {name = "default:apple", chance = 0.35, min = 3, max = 6},
+    {name = "farming:bread", chance = 0.20, min = 2, max = 5},
 
     {name = "default:sword_mese", chance = 0.25, max = 1},
     {name = "default:axe_mese", chance = 0.13, max = 1},
@@ -63,18 +56,15 @@ local mese_loot = {
     {name = "3d_armor:boots_gold", chance = 0.16, max = 1},
     {name = "shields:shield_gold", chance = 0.13, max = 1},
 
-    -- Mobility and keys create fights around the next objective. Golden
-    -- apples are intentionally reserved for Diamond Chests.
+    -- Mobility and keys
     {name = "wind_pearl:wind_pearl", chance = 0.25, min = 1, max = 2},
-    {name = "enderpearl:ender_pearl", chance = 0.18, min = 1, max = 2},
-    {name = "ffa_loot:diamond_key", chance = 0.06, max = 1},
+    {name = "enderpearl:ender_pearl", chance = 0.10, min = 1, max = 2},
+    {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
 }
 
 local diamond_loot = {
-    -- A key-gated chest should always offer the resources needed to survive
-    -- the fight it attracts, then offer a few high-impact rolls.
     {name = "skywars:wool_blue", chance = 1.00, min = 10, max = 20},
-    {name = "farming:bread", chance = 0.85, min = 4, max = 8},
+    {name = "farming:bread", chance = 0.85, min = 4, max = 6},
     {name = "default:apple", chance = 0.30, min = 2, max = 5},
 
     {name = "default:sword_diamond", chance = 0.35, max = 1},
@@ -94,11 +84,10 @@ local diamond_loot = {
     {name = "3d_armor:boots_diamond", chance = 0.20, max = 1},
     {name = "shields:shield_diamond", chance = 0.20, max = 1},
 
-    -- Both lifesavers have the exact same 8% chance per Diamond Chest. A
-    -- Shadow Sword stays a genuine highlight rather than a standard reward.
-    {name = "skywars:golden_apple", chance = 0.08, max = 1},
-    {name = "skywars:totem_of_undying", chance = 0.08, max = 1},
-    {name = "skywars:sword_shadow", chance = 0.01, max = 1},
+    -- Lifesavers
+    {name = "skywars:golden_apple", chance = 0.05, max = 1},
+    {name = "skywars:totem_of_undying", chance = 0.025, max = 1},
+    {name = "skywars:sword_shadow", chance = 0.025, max = 1},
 }
 
 local REGULAR_CHEST = 30
@@ -321,6 +310,8 @@ core.register_node("ffa_loot:mese_chest_open", {
 --
 --- DIAMOND CHEST
 --
+
+local diamond_chest_opened = {}
 
 core.register_on_leaveplayer(function(player)
     local name = player:get_player_name()

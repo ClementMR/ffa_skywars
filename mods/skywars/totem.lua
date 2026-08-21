@@ -7,19 +7,13 @@ core.register_craftitem("skywars:totem_of_undying", {
 })
 
 local function show_totem_hud(player)
-    local hud_id = player:hud_add({
+    hud_api.show(player, "skywars:totem", {
         type = "image",
         position = {x = 0.5, y = 0.37},
         text = "totem_of_undying.png",
         scale = {x = 8, y = 8},
         alignment = {x = 0, y = 0},
-    })
-
-    core.after(2, function()
-        if player and player:is_player() then
-            player:hud_remove(hud_id)
-        end
-    end)
+    }, {duration = 2})
 end
 
 local function revive_player(player)
@@ -66,9 +60,14 @@ core.register_playerevent(function(player, eventname)
         local inv = player:get_inventory()
         local hp = player:get_hp()
         if hp <= 0 then
-            if inv:contains_item("main", "skywars:totem_of_undying") then
+            local totem = inv:get_stack("totem", 1)
+            if totem:get_name() == "skywars:totem_of_undying" then
                 revive_player(player)
-                inv:remove_item("main", "skywars:totem_of_undying 1")
+                inv:set_stack("totem", 1, ItemStack())
+                local inventory_api = rawget(_G, "ffa_inventory")
+                if inventory_api and inventory_api.refresh_totem_visual then
+                    inventory_api.refresh_totem_visual(player)
+                end
             end
         end
     end

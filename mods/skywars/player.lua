@@ -3,12 +3,12 @@ local starter_list = {
     "skywars:leaves 8",
 }
 
-function skywars.teleport_player(player, map_or_id)
+function skywars.teleport_player(player)
     if not player then
         return false
     end
 
-    local spawn = skywars.get_random_spawn(map_or_id)
+    local spawn = skywars.get_random_spawn(skywars.get_current_map_id())
     if not spawn then
         return false
     end
@@ -45,8 +45,8 @@ core.register_on_dieplayer(function(player)
     end
 
     local player_inv = player:get_inventory()
-    for _, list in ipairs({"main", "craft"}) do
-        for _, stack in ipairs(player_inv:get_list(list)) do
+    for _, list in ipairs({"main", "craft", "totem"}) do
+        for _, stack in ipairs(player_inv:get_list(list) or {}) do
             if not stack:is_empty() then
                 core.add_item(player:get_pos(), stack)
                 player_inv:remove_item(list, stack)
@@ -62,7 +62,7 @@ core.register_on_respawnplayer(function(player)
         return
     end
 
-    give_starter_items(player)
+    --give_starter_items(player)
 end)
 
 core.register_on_placenode(function(pos, newnode, placer)

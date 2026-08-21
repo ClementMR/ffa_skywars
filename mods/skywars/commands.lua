@@ -1,5 +1,7 @@
+local S = core.get_translator(core.get_current_modname())
+
 core.register_chatcommand("killme", {
-	description = "Kill yourself to respawn",
+	description = S("Kill yourself to respawn"),
 	func = function(name)
 		local player = core.get_player_by_name(name)
 		if player then
@@ -21,6 +23,26 @@ core.register_chatcommand("killme", {
 			-- Show error message if used when not logged in, eg: from IRC mod
 			return false, "You need to be online to be killed!"
 		end
+	end
+})
+
+core.register_chatcommand("playerinfo", {
+	description = S("Print informations of the specified player"),
+	params = "<name>",
+	privs = {ffa_manager=true},
+	func = function(name, param)
+		local player = core.get_player_by_name(param)
+		if player then
+			local player_info = core.get_player_information(param)
+			local output = {}
+			for key, value in pairs(player_info) do
+				table.insert(output, key .. " = " .. value)
+			end
+
+			return true, S("@1's informations@n", core.colorize("cyan", param)) .. table.concat(output, "\n")
+		end
+
+		return false, S("The player @1 does not exist or is not online.", param)
 	end
 })
 

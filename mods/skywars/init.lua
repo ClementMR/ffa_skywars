@@ -13,7 +13,7 @@ local files = {
     "maps",
     "map_editor",
     "player",
-    "y_min",
+    "death_bound",
     "nodes",
     "items",
     "fireball",

@@ -21,41 +21,6 @@ local function cube_text(map)
 		math.floor(bounds.max.y - bounds.min.y + 1), math.floor(bounds.max.z - bounds.min.z + 1))
 end
 
-local function show_bounds_preview(player, map)
-	local bounds = skywars.map_bounds(map)
-	if not bounds then
-		return false
-	end
-
-	local minp, maxp = bounds.min, bounds.max
-	local function particle(pos)
-		core.add_particle({
-			pos = pos,
-			velocity = vector.new(),
-			acceleration = vector.new(),
-			expirationtime = 5,
-			size = 3,
-			glow = 10,
-			texture = "default_mese_crystal_fragment.png^[colorize:#38BDF8:220",
-		})
-	end
-
-	for step = 0, 8 do
-		local progress = step / 8
-		local x = minp.x + (maxp.x - minp.x) * progress
-		local y = minp.y + (maxp.y - minp.y) * progress
-		local z = minp.z + (maxp.z - minp.z) * progress
-		for _, edge in ipairs({
-			{x, minp.y, minp.z}, {x, minp.y, maxp.z}, {x, maxp.y, minp.z}, {x, maxp.y, maxp.z},
-			{minp.x, y, minp.z}, {minp.x, y, maxp.z}, {maxp.x, y, minp.z}, {maxp.x, y, maxp.z},
-			{minp.x, minp.y, z}, {minp.x, maxp.y, z}, {maxp.x, minp.y, z}, {maxp.x, maxp.y, z},
-		}) do
-			particle({x = edge[1], y = edge[2], z = edge[3]})
-		end
-	end
-	return true
-end
-
 local function show_list(player)
 	local name = player:get_player_name()
 	local ids = skywars.get_map_ids(false)
@@ -115,7 +80,6 @@ local function show_editor(player, map_id, requested_page)
 		"style_type[button_exit;bgcolor=#A23B3B;bgcolor_hovered=#C8553D;border=false]",
 		"label[0.55,0.35;" .. F(S("Edit map: @1", map_id)) .. "]",
 		"label[6.8,0.35;" .. F(ready) .. "]",
-		"button[9.8,0.2;2.2,0.6;preview_bounds;" .. F(S("Preview cube")) .. "]",
 		"button[12.1,0.2;2.2,0.6;back;" .. F(S("Maps")) .. "]",
 		"box[0.4,1.05;14.2,2.25;#18212C99]",
 		"label[0.65,1.02;" .. F(cube_text(map)) .. "]",
@@ -236,12 +200,6 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 			skywars.add_spawn(map_id, player:get_pos())
 			page = math.ceil(#map.spawns / 6)
 			editor_message(player, S("Spawn added."))
-		elseif fields.preview_bounds then
-			if show_bounds_preview(player, map) then
-				editor_message(player, S("Cube preview shown for 5 seconds."))
-			else
-				editor_message(player, S("Define both cube positions first."))
-			end
 		else
 			for _, key in ipairs({"pos1", "pos2"}) do
 				if fields["set_" .. key] then

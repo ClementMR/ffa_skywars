@@ -167,14 +167,17 @@ function skywars.cleanup_map(map_or_id, done)
 end
 
 local function cleanup_hud(player, text, duration)
-	hud_api.show_alert(player, "cleanup", text, {
-		duration = duration,
+	hud_api.show(player, "skywars:cleanup", {
+		type = "text",
+		text = text,
+		number = 0xFFB020,
 		position = {x = 1, y = 0},
-		anchor = {x = -1, y = 1},
+		alignment = {x = -1, y = 1},
 		offset = {x = -24, y = 24},
-		color = 0xFFB020,
-		background = false
-	})
+		size = {x = 1.15, y = 1.15},
+		style = 1,
+		z_index = 10,
+	}, {duration = duration, background = false})
 end
 
 local function announce_warning(seconds, next_map_id)

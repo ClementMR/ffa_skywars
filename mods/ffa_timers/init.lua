@@ -24,11 +24,20 @@ local function update_timer(player, timer, text, color, timer_name)
     color = color or 0xFFFFFF
     timer_name = timer_name or ""
 
-    hud_api.show_actionbar(player, text.." ("..timer.."s)", color, 1)
+    hud_api.show(player, "ffa_timers:status", {
+        type = "text",
+        text = text.." ("..timer.."s)",
+        number = color,
+        position = {x = 0.5, y = 0.8},
+        alignment = {x = 0, y = 0},
+        size = {x = 1.1, y = 1.1},
+        style = 1,
+        z_index = 10,
+    }, {background = true})
 
     if timer == 0 or player:get_hp() == 0 then
         players_timer[name] = nil
-        hud_api.remove(player, "actionbar")
+        hud_api.remove(player, "ffa_timers:status")
 
         return
     end
@@ -144,8 +153,8 @@ core.register_on_leaveplayer(function(player, timed_out)
 
         drop_armor(player)
 
-        for _, list in ipairs({"main", "craft"}) do
-            for _, stack in ipairs(inv:get_list(list)) do
+        for _, list in ipairs({"main", "craft", "totem"}) do
+            for _, stack in ipairs(inv:get_list(list) or {}) do
                 if not stack:is_empty() then
                     core.add_item(player:get_pos(), stack)
                     inv:remove_item(list, stack)

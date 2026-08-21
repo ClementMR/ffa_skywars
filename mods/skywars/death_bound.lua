@@ -3,13 +3,13 @@ local function update()
 
     for _, player in ipairs(core.get_connected_players()) do
         local pos = player:get_pos()
-        if player and pos.y <= -100 and not
+        if player and pos.y <= 0 and not
                 core.check_player_privs(player, {creative=true}) then
             player:set_hp(0)
         end
     end
 
-    core.after(5, update)
+    core.after(1, update)
 end
 
 

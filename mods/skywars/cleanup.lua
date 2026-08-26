@@ -80,7 +80,7 @@ local function remove_dynamic_objects(bounds, done)
 
 	for _, object in ipairs(core.get_objects_inside_radius(center, half_diagonal)) do
 		local pos = object:get_pos()
-		if pos and not object:is_player() and is_in_bounds(pos, bounds) then
+		if pos and not object:is_player() and is_in_bounds(pos, bounds) and object:get_luaentity().name == "__builtin:item" then
 			table.insert(objects, object)
 		end
 	end

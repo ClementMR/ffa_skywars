@@ -89,6 +89,8 @@ end)
 function default.chest.register_chest(prefixed_name, d)
 	local name = prefixed_name:sub(1,1) == ':' and prefixed_name:sub(2,-1) or prefixed_name
 	local def = table.copy(d)
+	def.drawtype = "mesh"
+	def.visual = "mesh"
 	def.paramtype = "light"
 	def.paramtype2 = "facedir"
 	def.legacy_facedir_simple = true

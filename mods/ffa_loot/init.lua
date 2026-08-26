@@ -1,3 +1,5 @@
+local S = core.get_translator("ffa_loot")
+
 -- Each entry is rolled once whenever a chest refills.  Keeping the odds on
 -- the entries themselves (instead of rolling the whole table several times)
 -- makes a refill predictable to balance: `chance = 0.25` means a 25% chance
@@ -85,8 +87,8 @@ local diamond_loot = {
     {name = "shields:shield_diamond", chance = 0.20, max = 1},
 
     -- Lifesavers
-    {name = "skywars:golden_apple", chance = 0.05, max = 1},
-    {name = "skywars:totem_of_undying", chance = 0.025, max = 1},
+    {name = "skywars:golden_apple", chance = 0.10, max = 2},
+    {name = "skywars:totem_of_undying", chance = 0.05, max = 1},
     {name = "skywars:sword_shadow", chance = 0.025, max = 1},
 }
 
@@ -130,22 +132,13 @@ local function fill_chest_random(pos, loot)
     end
 end
 
-local function construct_node(pos, infotext)
-    local meta = core.get_meta(pos)
-    meta:set_string("infotext", infotext)
-    local inv = meta:get_inventory()
-    inv:set_size("main", 8*4)
-    core.get_node_timer(pos):start(1)
-end
-
-local function update_node(pos, refill_time, loot)
+local function update_node(pos, refill_time, node_infotext, loot)
     local meta = core.get_meta(pos)
     local timer = meta:get_int("timer")
     local time_left = (refill_time - timer)
-    local infotext = meta:get_string("infotext")
 
     meta:set_int("timer", timer + 1)
-    meta:set_string("infotext", ("%s, Filling in %ds"):format(infotext:split(",")[1], time_left))
+    meta:set_string("infotext", S("@1, will be full in @2s", node_infotext, time_left))
 
     if time_left <= 0 then
         fill_chest_random(pos, loot)
@@ -157,126 +150,101 @@ local function update_node(pos, refill_time, loot)
     end
 end
 
-local function regular_chest_on_rightclick(pos, node, clicker)
-    local cn = clicker:get_player_name()
+local function register_basic_chest(nodename, d)
+	local def = table.copy(d)
 
-    if default.chest.open_chests[cn] then
-        default.chest.chest_lid_close(cn)
-    end
-    core.sound_play("default_chest_open", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
-    if not default.chest.chest_lid_obstructed(pos) then
-        core.swap_node(pos, {name = "ffa_loot:regular_chest_open", param2 = node.param2 })
-    end
-    core.after(0.2, core.show_formspec, cn, "ffa_loot:regular_chest", default.chest.get_chest_formspec(pos))
-    default.chest.open_chests[cn] = { pos = pos, sound = "default_chest_close", swap = "ffa_loot:regular_chest" }
-end
+    def.drawtype = "mesh"
+	def.visual = "mesh"
+	def.paramtype = "light"
+	def.paramtype2 = "facedir"
+	def.legacy_facedir_simple = true
+	def.is_ground_content = false
 
-local function mese_chest_on_rightclick(pos, node, clicker)
-    local cn = clicker:get_player_name()
+    def.on_construct = function(pos)
+        local meta = core.get_meta(pos)
+        meta:set_string("infotext", def.description)
+        local inv = meta:get_inventory()
+        inv:set_size("main", 8*4)
+        core.get_node_timer(pos):start(1)
+    end
 
-    if default.chest.open_chests[cn] then
-        default.chest.chest_lid_close(cn)
+    def.on_rightclick = function(pos, node, clicker)
+        local cn = clicker:get_player_name()
+
+        if default.chest.open_chests[cn] then
+            default.chest.chest_lid_close(cn)
+        end
+
+        core.sound_play("default_chest_open", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
+
+        if not default.chest.chest_lid_obstructed(pos) then
+            core.swap_node(pos, {name = nodename .. "_open", param2 = node.param2 })
+        end
+
+        core.show_formspec(cn, "default:chest", default.chest.get_chest_formspec(pos))
+        default.chest.open_chests[cn] = { pos = pos, sound = "default_chest_close", swap = nodename }
     end
-    core.sound_play("default_chest_open", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
-    if not default.chest.chest_lid_obstructed(pos) then
-        core.swap_node(pos, {name = "ffa_loot:mese_chest_open", param2 = node.param2 })
-    end
-    core.after(0.2, core.show_formspec, cn, "ffa_loot:mese_chest", default.chest.get_chest_formspec(pos))
-    default.chest.open_chests[cn] = { pos = pos, sound = "default_chest_close", swap = "ffa_loot:mese_chest" }
+
+    def.on_blast = function() end
+    def.groups = { unbreakable = 1 }
+    def.sounds = default.node_sound_wood_defaults()
+
+	default.set_inventory_action_loggers(def, "ffa_loot")
+
+	local def_opened = table.copy(def)
+	local def_closed = table.copy(def)
+
+	def_opened.mesh = "chest_open.obj"
+	for i = 1, #def_opened.tiles do
+		if type(def_opened.tiles[i]) == "string" then
+			def_opened.tiles[i] = {name = def_opened.tiles[i], backface_culling = true}
+		elseif def_opened.tiles[i].backface_culling == nil then
+			def_opened.tiles[i].backface_culling = true
+		end
+	end
+	def_opened.drop = nodename
+	def_opened.groups.not_in_creative_inventory = 1
+	def_opened.selection_box = {
+		type = "fixed",
+		fixed = { -1/2, -1/2, -1/2, 1/2, 3/16, 1/2 },
+	}
+
+	def_closed.mesh = nil
+	def_closed.drawtype = nil
+	def_closed.tiles[6] = def.tiles[5] -- swap textures around for "normal"
+	def_closed.tiles[5] = def.tiles[3] -- drawtype to make them match the mesh
+	def_closed.tiles[3] = def.tiles[3].."^[transformFX"
+
+	core.register_node(nodename, def_closed)
+	core.register_node(nodename .. "_open", def_opened)
 end
 
 --
 --- REGULAR CHEST
 --
 
-core.register_node("ffa_loot:regular_chest", {
-	description = "Regular Chest",
+register_basic_chest("ffa_loot:regular_chest", {
+	description = S("Regular Chest"),
 	tiles = {
 		"default_chest_top.png",
 		"default_chest_top.png",
 		"default_chest_side.png",
 		"default_chest_side.png",
-        "default_chest_side.png",
 		"default_chest_front.png",
+        "default_chest_inside.png"
 	},
-	paramtype = "light",
-    paramtype2 = "facedir",
-	legacy_facedir_simple = true,
-	is_ground_content = false,
-	sounds = default.node_sound_wood_defaults(),
-	groups = {unbreakable=1},
-    on_construct = function(pos) construct_node(pos, "Regular Chest") end,
-    on_rightclick = function(pos, node, clicker) regular_chest_on_rightclick(pos, node, clicker) end,
     on_timer = function(pos, elapsed)
-        update_node(pos, REGULAR_CHEST, regular_loot)
+        update_node(pos, REGULAR_CHEST, S("Regular Chest"), regular_loot)
         return true
-    end,
-    on_blast = function() end,
-})
-
-core.register_node("ffa_loot:regular_chest_open", {
-	description = "Regular Chest Opened",
-	tiles = {
-        {name = "default_chest_top.png", backface_culling = true},
-        {name = "default_chest_top.png", backface_culling = true},
-        {name = "default_chest_side.png", backface_culling = true},
-        {name = "default_chest_side.png", backface_culling = true},
-        {name = "default_chest_front.png", backface_culling = true},
-        {name = "default_chest_inside.png", backface_culling = true},
-	},
-    selection_box = {
-		type = "fixed",
-		fixed = { -1/2, -1/2, -1/2, 1/2, 3/16, 1/2 },
-	},
-    drawtype = "mesh",
-    mesh = "chest_open.obj",
-	paramtype = "light",
-    paramtype2 = "facedir",
-	legacy_facedir_simple = true,
-	is_ground_content = false,
-	sounds = default.node_sound_wood_defaults(),
-	groups = {unbreakable=1, not_in_creative_inventory=1},
-    on_construct = function(pos) construct_node(pos, "Regular Chest") end,
-    on_rightclick = function(pos, node, clicker) regular_chest_on_rightclick(pos, node, clicker) end,
-    on_timer = function(pos, elapsed)
-        update_node(pos, REGULAR_CHEST, regular_loot)
-        return true
-    end,
-    on_blast = function() end,
-    drop = "ffa_loot:regular_chest"
+    end
 })
 
 --
 --- MESE CHEST
 --
 
-core.register_node("ffa_loot:mese_chest", {
-	description = "Mese Chest",
-	tiles = {
-        "(default_chest_top.png^default_mese_crystal.png)^[colorize:#FFDF20:100",
-        "default_chest_top.png^[colorize:#FFDF20:100",
-        "default_chest_side.png^[colorize:#FFDF20:100",
-        "default_chest_side.png^[colorize:#FFDF20:100",
-        "default_chest_side.png^[colorize:#FFDF20:100",
-        "default_chest_front.png^[colorize:#FFDF20:100"
-	},
-	paramtype = "light",
-    paramtype2 = "facedir",
-	legacy_facedir_simple = true,
-	is_ground_content = false,
-	sounds = default.node_sound_wood_defaults(),
-	groups = {unbreakable=1},
-    on_construct = function(pos) construct_node(pos, "Mese Chest") end,
-    on_rightclick = function(pos, node, clicker) mese_chest_on_rightclick(pos, node, clicker) end,
-    on_timer = function(pos, elapsed)
-        update_node(pos, MESE_CHEST, mese_loot)
-        return true
-    end,
-    on_blast = function() end,
-})
-
-core.register_node("ffa_loot:mese_chest_open", {
-	description = "Mese Chest Opened",
+register_basic_chest("ffa_loot:mese_chest", {
+	description = S("Mese Chest"),
 	tiles = {
         "(default_chest_top.png^default_mese_crystal.png)^[colorize:#FFDF20:100",
         "default_chest_top.png^[colorize:#FFDF20:100",
@@ -285,26 +253,10 @@ core.register_node("ffa_loot:mese_chest_open", {
         "default_chest_front.png^[colorize:#FFDF20:100",
         "default_chest_inside.png"
 	},
-    selection_box = {
-		type = "fixed",
-		fixed = { -1/2, -1/2, -1/2, 1/2, 3/16, 1/2 },
-	},
-    drawtype = "mesh",
-    mesh = "chest_open.obj",
-	paramtype = "light",
-    paramtype2 = "facedir",
-	legacy_facedir_simple = true,
-	is_ground_content = false,
-	sounds = default.node_sound_wood_defaults(),
-	groups = {unbreakable=1, not_in_creative_inventory=1},
-    on_construct = function(pos) construct_node(pos, "Mese Chest") end,
-    on_rightclick = function(pos, node, clicker) mese_chest_on_rightclick(pos, node, clicker) end,
     on_timer = function(pos, elapsed)
-        update_node(pos, MESE_CHEST, mese_loot)
+        update_node(pos, MESE_CHEST, S("Mese Chest"), mese_loot)
         return true
-    end,
-    on_blast = function() end,
-    drop = "ffa_loot:mese_chest"
+    end
 })
 
 --
@@ -333,143 +285,146 @@ local function has_key(clicker, pos)
         return true
     end
 
-    if not chest_opened(pos) then
-        core.chat_send_player(name,
-        ("You need a %s to open this chest."):format(core.colorize("#12e8ec", stack:get_description())))
-    end
-
     return false
 end
 
 local function remove_key(clicker)
-    clicker:set_wielded_item("")
+    if not core.is_creative_enabled(clicker:get_player_name()) then
+        clicker:set_wielded_item("")
+    end
 end
 
 local function update_diamond_chest(pos, closing_time)
     local meta = core.get_meta(pos)
     local timer = meta:get_int("timer")
-    local infotext = meta:get_string("infotext")
 
     meta:set_int("timer", timer - 1)
-    meta:set_string("infotext", ("%s, Closing in %ds"):format(infotext:split(",")[1], timer - 1))
+    meta:set_string("infotext", S("@1, Closing in @2s", S("Diamond Chest"), timer - 1))
 
     if (timer -1) == 0 then
-        meta:set_string("infotext", ("%s"):format(infotext:split(",")[1]))
+        meta:set_string("infotext", S("Diamond Chest"))
         core.swap_node(pos, {name = "ffa_loot:diamond_chest", param2 = core.get_node(pos).param2 })
 
         for name, opened_pos in pairs(diamond_chest_opened) do
             if vector.equals(opened_pos, pos) then
                 core.close_formspec(name, "ffa_loot:diamond_chest")
+                core.sound_play("default_chest_close", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
                 diamond_chest_opened[name] = nil
             end
         end
     end
 end
 
-core.register_node("ffa_loot:diamond_chest", {
-	description = "Diamond Chest",
+local function register_diamond_chest(nodename, d)
+	local def = table.copy(d)
+
+    def.drawtype = "mesh"
+	def.visual = "mesh"
+	def.paramtype = "light"
+	def.paramtype2 = "facedir"
+	def.legacy_facedir_simple = true
+	def.is_ground_content = false
+
+    def.on_construct = function(pos)
+        local meta = core.get_meta(pos)
+        meta:set_string("infotext", def.description)
+        local inv = meta:get_inventory()
+        inv:set_size("main", 8*4)
+        core.get_node_timer(pos):start(1)
+    end
+
+    def.on_timer = function(pos, elapsed)
+        local is_opened = chest_opened(pos)
+        if is_opened then
+            update_diamond_chest(pos, DIAMOND_CHEST)
+        end
+
+        return true
+    end
+
+    def.on_blast = function() end
+    def.groups = { unbreakable = 1 }
+    def.sounds = default.node_sound_wood_defaults()
+
+	default.set_inventory_action_loggers(def, "ffa_loot")
+
+	local def_opened = table.copy(def)
+	local def_closed = table.copy(def)
+
+    def_opened.on_rightclick = function(pos, node, clicker)
+        local cn = clicker:get_player_name()
+        core.show_formspec(cn, "ffa_loot:diamond_chest", default.chest.get_chest_formspec(pos))
+
+        diamond_chest_opened[cn] = pos
+    end
+
+	def_opened.mesh = "chest_open.obj"
+	for i = 1, #def_opened.tiles do
+		if type(def_opened.tiles[i]) == "string" then
+			def_opened.tiles[i] = {name = def_opened.tiles[i], backface_culling = true}
+		elseif def_opened.tiles[i].backface_culling == nil then
+			def_opened.tiles[i].backface_culling = true
+		end
+	end
+	def_opened.drop = nodename
+	def_opened.groups.not_in_creative_inventory = 1
+	def_opened.selection_box = {
+		type = "fixed",
+		fixed = { -1/2, -1/2, -1/2, 1/2, 3/16, 1/2 },
+	}
+
+    def_closed.on_rightclick = function(pos, node, clicker)
+        local cn = clicker:get_player_name()
+        local meta = core.get_meta(pos)
+        local is_opened = chest_opened(pos)
+
+        if not is_opened and has_key(clicker, pos) then
+            core.after(0, remove_key, clicker)
+            fill_chest_random(pos, diamond_loot)
+            meta:set_int("timer", DIAMOND_CHEST)
+
+            core.chat_send_all(S("@1 has opened a @2", cn, core.colorize("#12e8ec", S("Diamond Chest"))))
+
+            core.sound_play("ffa_loot_unlock", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
+            core.swap_node(pos, {name = "ffa_loot:diamond_chest_open", param2 = node.param2 })
+            core.show_formspec(cn, "ffa_loot:diamond_chest", default.chest.get_chest_formspec(pos))
+
+            diamond_chest_opened[cn] = pos
+        else
+            core.chat_send_player(cn, S("You need a @1 to open this chest.", core.colorize("#12e8ec", S("Diamond Key"))))
+        end
+    end
+
+	def_closed.mesh = nil
+	def_closed.drawtype = nil
+	def_closed.tiles[6] = def.tiles[5] -- swap textures around for "normal"
+	def_closed.tiles[5] = def.tiles[3] -- drawtype to make them match the mesh
+	def_closed.tiles[3] = def.tiles[3].."^[transformFX"
+
+	core.register_node(nodename, def_closed)
+	core.register_node(nodename .. "_open", def_opened)
+end
+
+register_diamond_chest("ffa_loot:diamond_chest", {
+	description = S("Diamond Chest"),
 	tiles = {
         "(default_chest_top.png^default_diamond.png)^[colorize:#12e8ec:100",
         "default_chest_top.png^[colorize:#12e8ec:100",
         "default_chest_side.png^[colorize:#12e8ec:100",
         "default_chest_side.png^[colorize:#12e8ec:100",
-        "default_chest_side.png^[colorize:#12e8ec:100",
-        "default_chest_front.png^[colorize:#12e8ec:100"
-	},
-	paramtype = "light",
-    paramtype2 = "facedir",
-	legacy_facedir_simple = true,
-	is_ground_content = false,
-	sounds = default.node_sound_wood_defaults(),
-	groups = {unbreakable=1},
-    on_construct = function(pos) construct_node(pos, "Diamond Chest") end,
-    on_rightclick = function(pos, node, clicker)
-        local cn = clicker:get_player_name()
-        local meta = core.get_meta(pos)
-        local is_opened = chest_opened(pos)
-
-        if not has_key(clicker, pos) and not is_opened then
-            return
-        end
-
-        if not is_opened then
-            core.after(0, remove_key, clicker)
-            fill_chest_random(pos, diamond_loot)
-            meta:set_int("timer", DIAMOND_CHEST)
-
-            core.chat_send_all(("%s has opened a %s"):format(cn, core.colorize("#12e8ec", "Diamond Chest")))
-        end
-
-        --local p = vector.new(pos.x, pos.y+1, pos.z)
-        --core.chat_send_player(cn, "<" .. core.colorize("#31C950", "Forgotten Player") .. "> I seee you")
-        --skywars.spawn_fp(p)
-
-        core.sound_play("ffa_loot_unlock", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
-        core.swap_node(pos, {name = "ffa_loot:diamond_chest_open", param2 = node.param2 })
-        core.after(0.2, core.show_formspec, cn, "ffa_loot:diamond_chest", default.chest.get_chest_formspec(pos))
-
-        diamond_chest_opened[cn] = pos
-    end,
-    on_timer = function(pos, elapsed)
-        local is_opened = chest_opened(pos)
-        if is_opened then
-            update_diamond_chest(pos, DIAMOND_CHEST)
-        end
-
-        return true
-    end,
-    on_blast = function() end,
-})
-
-core.register_node("ffa_loot:diamond_chest_open", {
-	description = "Diamond Chest Opened",
-	tiles = {
-        {name = "(default_chest_top.png^default_diamond.png)^[colorize:#12e8ec:100", backface_culling = true},
-        {name = "default_chest_top.png^[colorize:#12e8ec:100", backface_culling = true},
-        {name = "default_chest_side.png^[colorize:#12e8ec:100", backface_culling = true},
-        {name = "default_chest_side.png^[colorize:#12e8ec:100", backface_culling = true},
-        {name = "default_chest_front.png^[colorize:#12e8ec:100", backface_culling = true},
-        {name = "default_chest_inside.png", backface_culling = true},
-	},
-    selection_box = {
-		type = "fixed",
-		fixed = { -1/2, -1/2, -1/2, 1/2, 3/16, 1/2 },
-	},
-    drawtype = "mesh",
-    mesh = "chest_open.obj",
-	paramtype = "light",
-    paramtype2 = "facedir",
-	legacy_facedir_simple = true,
-	is_ground_content = false,
-	sounds = default.node_sound_wood_defaults(),
-	groups = {unbreakable=1, not_in_creative_inventory=1},
-    on_construct = function(pos) construct_node(pos, "Diamond Chest") end,
-    on_rightclick = function(pos, node, clicker)
-        local cn = clicker:get_player_name()
-        core.show_formspec(cn, "ffa_loot:diamond_chest", default.chest.get_chest_formspec(pos))
-
-        diamond_chest_opened[cn] = pos
-    end,
-    on_timer = function(pos, elapsed)
-        local is_opened = chest_opened(pos)
-        if is_opened then
-            update_diamond_chest(pos, DIAMOND_CHEST)
-        end
-
-        return true
-    end,
-    on_blast = function() end,
-    drop = "ffa_loot:diamond_chest"
+        "default_chest_front.png^[colorize:#12e8ec:100",
+        "default_chest_inside.png"
+	}
 })
 
 core.register_craftitem("ffa_loot:diamond_key", {
-    description = core.colorize("#12e8ec", "Diamond Key"),
+    description = core.colorize("#12e8ec", S("Diamond Key")),
     inventory_image = "ffa_loot_diamond_key.png",
     stack_max = 1
 })
 
 core.register_lbm({
-    label = "Close opened chests on load",
+    label = S("Close opened chests on load"),
     name = "ffa_loot:close_chest_open",
     nodenames = {
         "ffa_loot:regular_chest_open",

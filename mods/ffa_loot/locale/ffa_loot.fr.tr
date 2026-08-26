@@ -1,0 +1,11 @@
+# textdomain: ffa_loot
+
+@1, will be full in @2s=@1, sera plein dans @2s
+Regular Chest=Coffre Commun
+Mese Chest=Coffre Mese
+@1, Closing in @2s=@1, se ferme dans @2s
+@1 has opened a @2=@1 a ouvert un @2
+You need a @1 to open this chest.=Vous avez besoin d'une @1 pour ouvrir ce coffre.
+Diamond Chest=Coffre Diamant
+Diamond Key=Clé en diamant
+Close opened chests on load=Ferme les coffres ouverts au chargement

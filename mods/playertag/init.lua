@@ -4,7 +4,7 @@ local ATTACH_POSITION = core.rgba and {x = 0, y = 20, z = 0} or {x = 0, y = 10, 
 
 playertag = {}
 
-local function add_entity_tag(player)
+local function add_entity_tag(player, attempts)
     if not player or not player:is_player() then
         return
     end
@@ -13,7 +13,7 @@ local function add_entity_tag(player)
 
     players[name] = players[name] or {}
 
-	if players[name].entity then
+	if players[name].entity and players[name].entity:get_luaentity() then
         return
     end
 
@@ -69,37 +69,15 @@ local function add_entity_tag(player)
     players[name].entity = ent
 end
 
-local function add_entity_tag_retry(player, attempts)
-    if not player or not player:is_player() then
-        return
-    end
-
-    local name = player:get_player_name()
-
-    players[name] = players[name] or {}
-
-    if players[name].entity then
-        return
-    end
-
-    add_entity_tag(player)
-
-    if not players[name].entity and attempts > 0 then
-        core.after(0.5, function()
-            add_entity_tag_retry(player, attempts - 1)
-        end)
-    end
-end
-
 function playertag.get(player)
     if not player then
         return nil
     end
 
-    local name = player:get_player_name()
-    local tag = players[name]
+    local tag = players[player:get_player_name()]
+    local entity = tag.entity
 
-    return tag and tag.entity or nil
+    return entity and entity:get_luaentity() or nil
 end
 
 function playertag.get_all()
@@ -111,8 +89,7 @@ function playertag.remove(player)
         return
     end
 
-    local name = player:get_player_name()
-    local tag = players[name]
+    local tag = players[player:get_player_name()]
 
     if not tag or not tag.entity then
         return
@@ -120,7 +97,7 @@ function playertag.remove(player)
 
     local entity = tag.entity
 
-    if entity then
+    if entity and entity:get_luaentity() then
         entity:remove()
     end
 
@@ -144,41 +121,32 @@ core.register_entity("playertag:tag", {
             y = 0.18,
             z = 2.16
         },
-
         textures = {"blank.png"},
-
         physical = false,
         makes_footstep_sound = false,
         backface_culling = false,
         static_save = false,
         pointable = false,
-
-        on_punch = function()
-            return true
-        end,
     }
 })
 
 if core.global_exists("armor") then
 	armor:register_on_update(function(player, index, stack)
-		add_entity_tag_retry(player, 0)
+		add_entity_tag(player)
 	end)
 end
 
 core.register_on_joinplayer(function(player)
-    local name = player:get_player_name()
-
-    players[name] = {}
+    players[player:get_player_name()] = {}
 
     core.after(0.1, function()
-        add_entity_tag_retry(player, 3)
+        add_entity_tag(player)
     end)
 end)
 
 core.register_on_leaveplayer(function(player)
-    local name = player:get_player_name()
-
-    playertag.remove(player)
-
-    players[name] = nil
+    if playertag.get(player) then
+        playertag.remove(player)
+        players[player:get_player_name()] = nil
+    end
 end)

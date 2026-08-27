@@ -17,7 +17,6 @@ local files = {
     "nodes",
     "items",
     "fireball",
-	"kill_history",
     "totem",
     "cleanup",
     "entities",

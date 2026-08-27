@@ -10,7 +10,7 @@ core.register_tool("skywars:sword_shadow", {
         groupcaps = {
             snappy={times={[1]=1.90, [2]=0.90, [3]=0.30}, uses = 100, maxlevel = 3}
         },
-        damage_groups = {fleshy = 14},
+        damage_groups = {fleshy = 12},
     },
     sound = {breaks = "default_tool_breaks"},
 	groups = {sword = 1, sword_shadow = 1},

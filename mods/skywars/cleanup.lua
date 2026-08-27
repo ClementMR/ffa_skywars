@@ -230,7 +230,10 @@ end
 
 -- Announces, moves players to a different ready map where possible, and then
 -- clears the previous cuboid. With one usable map, it cleans and reuses it.
-function skywars.start_map_rotation(delay)
+function skywars.start_map_rotation(delay, automatic)
+	if automatic and skywars.is_rotation_paused and skywars.is_rotation_paused() then
+		return false, "Automatic map rotation is paused."
+	end
 	if skywars.rotation_in_progress or skywars.cleanup_in_progress then
 		return false, "A map rotation or cleanup is already running."
 	end
@@ -257,6 +260,10 @@ function skywars.start_map_rotation(delay)
 	schedule_final_warnings(delay, next_id, token)
 
 	core.after(delay, function()
+		if automatic and skywars.is_rotation_paused and skywars.is_rotation_paused() then
+			skywars.rotation_in_progress = false
+			return
+		end
 		-- An admin may have deleted or invalidated the selected map during the
 		-- warning. Pick a safe candidate again at the last possible moment.
 		if not skywars.is_map_ready(next_id) then
@@ -347,13 +354,18 @@ local warning_thresholds = {
 }
 
 local function update_cleanup_timer()
+	if skywars.is_rotation_paused and skywars.is_rotation_paused() then
+		core.after(1, update_cleanup_timer)
+		return
+	end
+
 	if not skywars.rotation_in_progress and not skywars.cleanup_in_progress then
 		-- Start the transition at the beginning of its countdown.  Previously
 		-- the timer reached zero and then started another full warning delay,
 		-- so a "10 seconds" message could actually take 20 seconds.
 		if skywars.cleanup_timer <= transition_delay then
 			local delay = math.max(0, skywars.cleanup_timer)
-			local ok, error = skywars.start_map_rotation(delay)
+			local ok, error = skywars.start_map_rotation(delay, true)
 			if not ok then
 				core.log("warning", "[skywars] automatic rotation failed: " .. tostring(error))
 				skywars.cleanup_timer = cleanup_interval

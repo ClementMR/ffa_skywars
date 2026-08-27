@@ -1,5 +1,6 @@
 local S = core.get_translator(core.get_current_modname())
 local editor_state = {}
+local list_state = {}
 
 local function F(value)
 	return core.formspec_escape(tostring(value or ""))
@@ -21,41 +22,67 @@ local function cube_text(map)
 		math.floor(bounds.max.y - bounds.min.y + 1), math.floor(bounds.max.z - bounds.min.z + 1))
 end
 
-local function show_list(player)
+local function map_status(map_id, map)
+	if map.enabled == false then
+		return S("Disabled")
+	end
+	if map_id == skywars.get_current_map_id() then
+		return S("Active")
+	end
+	return skywars.is_map_ready(map) and S("Ready") or S("Incomplete")
+end
+
+local function show_list(player, requested_page)
 	local name = player:get_player_name()
 	local ids = skywars.get_map_ids(false)
 	local current = skywars.get_current_map_id() or S("None")
+	local page_count = math.max(1, math.ceil(#ids / 8))
+	local page = math.max(1, math.min(requested_page or (list_state[name] and list_state[name].page) or 1, page_count))
+	list_state[name] = {page = page}
+	local rotation = skywars.is_rotation_paused() and S("Paused") or S("Running")
 	local formspec = {
-		"formspec_version[6]size[12,9]",
+		"formspec_version[6]size[15,11.4]",
 		"bgcolor[#10131CEE;true]",
 		"style_type[button;bgcolor=#284B63;bgcolor_hovered=#3C6E71;border=false]",
 		"style_type[button_exit;bgcolor=#A23B3B;bgcolor_hovered=#C8553D;border=false]",
-		"label[0.6,0.45;" .. F(S("Skywars map manager")) .. "]",
-		"label[0.6,0.9;" .. F(S("Active map: @1", current)) .. "]",
-		"field[0.6,1.45;5,0.8;new_map;" .. F(S("New map name")) .. ";]",
-		"button[5.8,1.32;2,0.8;create;" .. F(S("Create")) .. "]",
-		"button_exit[9.4,0.35;2,0.7;close;" .. F(S("Close")) .. "]",
-		"box[0.45,2.25;11.1,6.25;#18212C99]",
+		"box[0.35,0.25;14.3,1.45;#1D2A40]",
+		"label[0.65,0.48;" .. F(S("Skywars map manager")) .. "]",
+		"label[0.65,0.92;" .. F(S("Active map: @1", current)) .. "]",
+		"label[5.25,0.92;" .. F(S("Automatic rotation: @1", rotation)) .. "]",
+		"button[9.7,0.66;2.45,0.58;rotation_toggle;"
+			.. F(skywars.is_rotation_paused() and S("Resume rotation") or S("Pause rotation")) .. "]",
+		"button_exit[12.35,0.66;1.85,0.58;close;" .. F(S("Close")) .. "]",
+		"field[0.65,2.15;5.2,0.7;new_map;" .. F(S("New map name")) .. ";]",
+		"button[5.95,1.88;2.0,0.7;create;" .. F(S("Create")) .. "]",
+		"label[0.65,2.8;" .. F(S("MAP")) .. "]",
+		"label[4.3,2.8;" .. F(S("STATUS")) .. "]",
+		"label[7.1,2.8;" .. F(S("ACTIONS")) .. "]",
+		"box[0.45,3.12;14.1,6.75;#18212C99]",
 	}
 
 	if #ids == 0 then
-		table.insert(formspec, "label[0.7,2.65;" .. F(S("No maps yet. Create one to get started.")) .. "]")
+		table.insert(formspec, "label[0.75,3.6;" .. F(S("No maps yet. Create one to get started.")) .. "]")
 	else
-		for index, map_id in ipairs(ids) do
-			if index > 7 then
-				break
-			end
+		local first_index = (page - 1) * 8 + 1
+		local last_index = math.min(#ids, first_index + 7)
+		for index = first_index, last_index do
+			local map_id = ids[index]
 			local map = skywars.get_map(map_id)
-			local status = skywars.is_map_ready(map) and S("Ready") or S("Incomplete")
-			local marker = map_id == current and " ★" or ""
-			local y = 2.45 + (index - 1) * 0.8
-			table.insert(formspec, "label[0.8," .. y .. ";" .. F(map_id .. marker) .. "]")
-			table.insert(formspec, "label[5.5," .. y .. ";" .. F(status) .. "]")
-			table.insert(formspec, "button[8.4," .. (y - 0.15) .. ";2.4,0.55;edit_" .. map_id
+			local y = 3.32 + (index - first_index) * 0.78
+			table.insert(formspec, "box[0.62," .. y .. ";13.75,0.58;#243147]")
+			table.insert(formspec, "label[0.85," .. (y + 0.15) .. ";" .. F(map_id) .. "]")
+			table.insert(formspec, "label[4.3," .. (y + 0.15) .. ";" .. F(map_status(map_id, map)) .. "]")
+			table.insert(formspec, "button[7.0," .. (y + 0.03) .. ";1.75,0.48;play_" .. map_id
+				.. ";" .. F(S("Play now")) .. "]")
+			table.insert(formspec, "button[8.95," .. (y + 0.03) .. ";2.1,0.48;toggle_" .. map_id
+				.. ";" .. F(map.enabled == false and S("Enable") or S("Disable")) .. "]")
+			table.insert(formspec, "button[11.25," .. (y + 0.03) .. ";2.45,0.48;edit_" .. map_id
 				.. ";" .. F(S("Edit")) .. "]")
 		end
-		if #ids > 7 then
-			table.insert(formspec, "label[0.8,8.05;" .. F(S("Only the first 7 maps are shown here; use /maps edit <name>.")) .. "]")
+		if page_count > 1 then
+			table.insert(formspec, "label[0.7,10.05;" .. F(S("Page @1/@2", page, page_count)) .. "]")
+			table.insert(formspec, "button[6.85,9.88;2,0.58;previous_maps;" .. F(S("Previous")) .. "]")
+			table.insert(formspec, "button[9.05,9.88;2,0.58;next_maps;" .. F(S("Next")) .. "]")
 		end
 	end
 
@@ -74,13 +101,15 @@ local function show_editor(player, map_id, requested_page)
 	editor_state[player:get_player_name()] = {map_id = map_id, page = page}
 	local ready = skywars.is_map_ready(map) and S("Ready for rotation") or S("Incomplete")
 	local formspec = {
-		"formspec_version[6]size[15,11]",
+		"formspec_version[6]size[15,11.4]",
 		"bgcolor[#10131CEE;true]",
 		"style_type[button;bgcolor=#284B63;bgcolor_hovered=#3C6E71;border=false]",
 		"style_type[button_exit;bgcolor=#A23B3B;bgcolor_hovered=#C8553D;border=false]",
 		"label[0.55,0.35;" .. F(S("Edit map: @1", map_id)) .. "]",
 		"label[6.8,0.35;" .. F(ready) .. "]",
 		"button[12.1,0.2;2.2,0.6;back;" .. F(S("Maps")) .. "]",
+		"field[5.6,10.5;3.3,0.7;rename_map;" .. F(S("New map name")) .. ";" .. F(map_id) .. "]",
+		"button[9.0,10.23;1.9,0.65;rename;" .. F(S("Rename")) .. "]",
 		"box[0.4,1.05;14.2,2.25;#18212C99]",
 		"label[0.65,1.02;" .. F(cube_text(map)) .. "]",
 		"label[0.65,1.35;" .. F(S("Position 1")) .. "]",
@@ -145,6 +174,20 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 		if fields.quit or fields.close then
 			return
 		end
+		local page = (list_state[player:get_player_name()] and list_state[player:get_player_name()].page) or 1
+		if fields.previous_maps then
+			show_list(player, page - 1)
+			return
+		elseif fields.next_maps then
+			show_list(player, page + 1)
+			return
+		elseif fields.rotation_toggle then
+			local paused = skywars.set_rotation_paused(not skywars.is_rotation_paused())
+			editor_message(player, paused and S("Automatic map rotation paused.")
+				or S("Automatic map rotation resumed."))
+			show_list(player, page)
+			return
+		end
 		if fields.create then
 			local map, error = skywars.create_map(fields.new_map)
 			if map then
@@ -157,7 +200,17 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 			return
 		end
 		for _, map_id in ipairs(skywars.get_map_ids(false)) do
-			if fields["edit_" .. map_id] then
+			if fields["play_" .. map_id] then
+				local ok, error = skywars.play_map(map_id)
+				editor_message(player, ok and S("Now playing: @1", map_id) or error)
+				show_list(player, page)
+				return
+			elseif fields["toggle_" .. map_id] then
+				local ok, error = skywars.set_map_enabled(map_id, not skywars.is_map_enabled(map_id))
+				editor_message(player, ok and S("Map @1 updated.", map_id) or error)
+				show_list(player, page)
+				return
+			elseif fields["edit_" .. map_id] then
 				show_editor(player, map_id)
 				return
 			end
@@ -182,6 +235,14 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 			page = page - 1
 		elseif fields.next_spawns then
 			page = page + 1
+		elseif fields.rename then
+			local ok, result = skywars.rename_map(map_id, fields.rename_map)
+			if ok then
+				editor_message(player, S("Map renamed to @1.", result.id))
+				show_editor(player, result.id, page)
+				return
+			end
+			editor_message(player, result)
 		elseif fields.save then
 			skywars.save_maps()
 			editor_message(player, S("Map saved."))
@@ -269,5 +330,7 @@ core.register_chatcommand("maps", {
 })
 
 core.register_on_leaveplayer(function(player)
-	editor_state[player:get_player_name()] = nil
+	local name = player:get_player_name()
+	editor_state[name] = nil
+	list_state[name] = nil
 end)

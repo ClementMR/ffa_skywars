@@ -4,8 +4,24 @@ local ATTACH_POSITION = core.rgba and {x = 0, y = 20, z = 0} or {x = 0, y = 10, 
 
 playertag = {}
 
-local function add_entity_tag(player, attempts)
+local function is_connected_player(player)
     if not player or not player:is_player() then
+        return false
+    end
+    local name = player:get_player_name()
+    return name ~= "" and core.get_player_by_name(name) == player
+end
+
+local function is_tag_entity(entity)
+    if not entity then
+        return false
+    end
+    local ok, luaentity = pcall(entity.get_luaentity, entity)
+    return ok and luaentity and luaentity.name == "playertag:tag"
+end
+
+local function add_entity_tag(player, attempts)
+    if not is_connected_player(player) then
         return
     end
 
@@ -13,9 +29,10 @@ local function add_entity_tag(player, attempts)
 
     players[name] = players[name] or {}
 
-	if players[name].entity and players[name].entity:get_luaentity() then
+    if is_tag_entity(players[name].entity) then
         return
     end
+    players[name].entity = nil
 
     -- Hide fixed nametag
     player:set_nametag_attributes({color = {a = 0, r = 0, g = 0, b = 0}})
@@ -67,11 +84,21 @@ local function add_entity_tag(player, attempts)
 
     -- Store entity
     players[name].entity = ent
+    local luaentity = ent:get_luaentity()
+    if luaentity then
+        luaentity.owner_name = name
+    end
 end
 
 function playertag.get(player)
     local tag = players[player:get_player_name()]
-    return tag and tag.entity or nil
+    if tag and is_tag_entity(tag.entity) then
+        return tag.entity
+    end
+    if tag then
+        players[player:get_player_name()] = nil
+    end
+    return nil
 end
 
 function playertag.get_all()
@@ -82,16 +109,9 @@ function playertag.remove(player)
     local name = player:get_player_name()
     local tag = players[name]
 
-    if not tag or not tag.entity then
-        return
+    if tag and is_tag_entity(tag.entity) then
+        tag.entity:remove()
     end
-
-    local entity = tag.entity
-
-    if entity then
-        entity:remove()
-    end
-
     players[name] = nil
 end
 
@@ -118,7 +138,32 @@ core.register_entity("playertag:tag", {
         backface_culling = false,
         static_save = false,
         pointable = false,
-    }
+    },
+    owner_name = "",
+    on_step = function(self)
+        local parent = self.object:get_attach()
+        if not parent or not parent:is_player() then
+            self.object:remove()
+            return
+        end
+
+        local name = parent:get_player_name()
+        if name == "" or core.get_player_by_name(name) ~= parent
+                or (self.owner_name ~= "" and self.owner_name ~= name) then
+            self.object:remove()
+            return
+        end
+
+        local entry = players[name]
+        if entry and entry.entity and entry.entity ~= self.object then
+            self.object:remove()
+            return
+        end
+
+        players[name] = players[name] or {}
+        players[name].entity = self.object
+        self.owner_name = name
+    end,
 })
 
 if core.global_exists("armor") then
@@ -131,12 +176,13 @@ core.register_on_joinplayer(function(player)
     players[player:get_player_name()] = {}
 
     core.after(0.1, function()
-        add_entity_tag(player)
+        local current_player = core.get_player_by_name(player:get_player_name())
+        if current_player then
+            add_entity_tag(current_player)
+        end
     end)
 end)
 
 core.register_on_leaveplayer(function(player)
-    if playertag.get(player) then
-        playertag.remove(player)
-    end
+    playertag.remove(player)
 end)

@@ -37,6 +37,7 @@ local function normalize_map(map_id, map)
 		pos1 = copy_pos(map.pos1),
 		pos2 = copy_pos(map.pos2),
 		spawns = {},
+		enabled = map.enabled ~= false,
 		-- During mod initialization Luanti disallows get_gametime(), so old
 		-- records without timestamps are represented by zero and receive real
 		-- timestamps on their next edit.
@@ -115,7 +116,7 @@ end
 function skywars.get_map_ids(ready_only)
 	local ids = {}
 	for map_id, map in pairs(skywars.maps) do
-		if not ready_only or skywars.is_map_ready(map) then
+		if not ready_only or (map.enabled ~= false and skywars.is_map_ready(map)) then
 			table.insert(ids, map_id)
 		end
 	end
@@ -127,6 +128,7 @@ function skywars.save_maps()
 	local serializable = {
 		version = 2,
 		current_map = skywars.current_map,
+		rotation_paused = skywars.rotation_paused == true,
 		maps = skywars.maps,
 	}
 	storage:set_string(STORAGE_KEY, core.serialize(serializable))
@@ -146,11 +148,16 @@ local function load_maps()
 	end
 
 	if valid_id(stored.current_map) and skywars.is_map_ready(stored.current_map) then
-		skywars.current_map = stored.current_map
+		local current = skywars.maps[stored.current_map]
+		skywars.current_map = current and current.enabled ~= false and stored.current_map or nil
 	else
+		skywars.current_map = nil
+	end
+	if not skywars.current_map then
 		local ready_maps = skywars.get_map_ids(true)
 		skywars.current_map = ready_maps[1]
 	end
+	skywars.rotation_paused = stored.rotation_paused == true
 
 	skywars.save_maps()
 end
@@ -164,11 +171,87 @@ function skywars.get_current_map()
 end
 
 function skywars.set_current_map(map_id)
+	local map = skywars.maps[map_id]
+	if map and map.enabled == false then
+		return false, "This map is disabled."
+	end
 	if not skywars.is_map_ready(map_id) then
 		return false, "This map needs two positions and at least one spawn."
 	end
 	skywars.current_map = map_id
 	skywars.save_maps()
+	return true
+end
+
+function skywars.is_map_enabled(map_id)
+	local map = skywars.maps[map_id]
+	return map and map.enabled ~= false or false
+end
+
+function skywars.set_map_enabled(map_id, enabled)
+	local map = skywars.maps[map_id]
+	if not map then
+		return false, "This map does not exist."
+	end
+	if enabled == false and map_id == skywars.current_map then
+		return false, "Activate another map before disabling the current map."
+	end
+	map.enabled = enabled ~= false
+	map.updated_at = core.get_gametime()
+	skywars.save_maps()
+	return true
+end
+
+function skywars.rename_map(map_id, new_name)
+	local map = skywars.maps[map_id]
+	local new_id = normalize_id(new_name)
+	if not map then
+		return false, "This map does not exist."
+	end
+	if not new_id then
+		return false, "Use 3 to 32 letters, digits, underscores or hyphens."
+	end
+	if new_id ~= map_id and skywars.maps[new_id] then
+		return false, "A map with this name already exists."
+	end
+	if new_id == map_id then
+		return true, map
+	end
+
+	skywars.maps[map_id] = nil
+	map.id = new_id
+	map.updated_at = core.get_gametime()
+	skywars.maps[new_id] = map
+	if skywars.current_map == map_id then
+		skywars.current_map = new_id
+	end
+	skywars.save_maps()
+	return true, map
+end
+
+function skywars.is_rotation_paused()
+	return skywars.rotation_paused == true
+end
+
+function skywars.set_rotation_paused(paused)
+	skywars.rotation_paused = paused == true
+	skywars.save_maps()
+	return skywars.rotation_paused
+end
+
+function skywars.play_map(map_id)
+	if skywars.rotation_in_progress or skywars.cleanup_in_progress then
+		return false, "A map rotation or cleanup is already running."
+	end
+	local activated, error = skywars.set_current_map(map_id)
+	if not activated then
+		return false, error
+	end
+	for _, player in ipairs(core.get_connected_players()) do
+		if not core.check_player_privs(player:get_player_name(), {creative = true}) then
+			skywars.teleport_player(player, map_id)
+		end
+	end
 	return true
 end
 
@@ -184,6 +267,7 @@ function skywars.create_map(name)
 	skywars.maps[map_id] = {
 		id = map_id,
 		spawns = {},
+		enabled = true,
 		created_at = core.get_gametime(),
 		updated_at = core.get_gametime(),
 	}

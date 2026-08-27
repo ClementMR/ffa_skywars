@@ -1,0 +1,5 @@
+# The in-memory cache is flushed on logout and shutdown as well as at this interval.
+player_stats_save_interval (Statistics save interval) int 60 30 3600
+
+# Seconds during which the last player that caused damage receives credit for a death.
+player_stats_kill_credit_window (Kill attribution window) int 8 1 120

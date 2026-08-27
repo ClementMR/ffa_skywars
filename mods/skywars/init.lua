@@ -22,6 +22,7 @@ local files = {
     "entities",
     "vanish",
     "commands",
+	"tips",
     "golden_apple",
     "hit_particles"
 }

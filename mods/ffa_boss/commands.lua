@@ -1,18 +1,10 @@
-local boss = forgotten_boss
-
-local function is_manager(name)
-    return core.check_player_privs(name, {ffa_manager = true})
-end
-
 local function status()
-    local state = boss.state.loot_phase and "loot" or boss.state.active and "active" or "idle"
-    return ("Event: %s | Players: %d / %d | Boss spawn: %s | Player spawn: %s")
+    local state = ffa_boss.state.loot_phase and "loot" or ffa_boss.state.active and "active" or "idle"
+    return ("Event: %s | Players: %d / %d")
         :format(
             state,
-            boss.member_count(),
-            boss.settings.max_players,
-            boss.get_position("boss_spawn") and "set" or "missing",
-            boss.get_position("player_spawn") and "set" or "missing"
+            ffa_boss.member_count(),
+            ffa_boss.settings.max_players
         )
 end
 
@@ -27,20 +19,20 @@ core.register_chatcommand("boss", {
 
         local action = (param:match("^%S+") or ""):lower()
         if action == "join" then
-            return boss.join_player(player)
+            return ffa_boss.join_player(player)
         end
         if action == "status" then
             return true, status()
         end
-        if not is_manager(name) then
+        if not core.check_player_privs(name, {ffa_manager = true}) then
             return false, "You need the ffa_manager privilege."
         end
         if action == "boss_spawn" or action == "player_spawn" then
-            boss.set_position(action, player:get_pos())
-            return true, ("%s set to %s."):format(action, boss.position_text(boss.get_position(action)))
+            ffa_boss.set_position(action, player:get_pos())
+            return true, ("%s set to %s."):format(action, ffa_boss.position_text(ffa_boss.get_position(action)))
         end
         if action == "start" then
-            return boss.start_event()
+            return ffa_boss.start_event()
         end
         return false, "/boss boss_spawn | player_spawn | start | join | status"
     end,

@@ -76,13 +76,9 @@ local function on_explode(obj, pos, name)
 
             local hit_pos1 = check_hit(pos, target_head and headpos or footpos, v)
 
-			-- Check the closest distance, but if that fails try targeting the farther one
-			if hit_pos1 or check_hit(pos, target_head and footpos or headpos, v) then
-				local stats_api = rawget(_G, "player_stats")
-				if stats_api and stats_api.record_attack then
-					stats_api.record_attack(v, player, "skywars:fireball")
-				end
-				v:punch(player, 1, {
+            -- Check the closest distance, but if that fails try targeting the farther one
+            if hit_pos1 or check_hit(pos, target_head and footpos or headpos, v) then
+                v:punch(player, 1, {
                     punch_interval = 1,
                     damage_groups = {
                         fleshy = 15 - ( (radius/2) * (target_head and headdist or footdist) )

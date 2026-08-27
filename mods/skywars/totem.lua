@@ -22,7 +22,7 @@ local function revive_player(player)
     local player_name = player:get_player_name()
 
     if hp <= 0 then
-        player:set_hp(3)
+        player:set_hp(5)
         core.log("action", "[Undying-Totem] Player: " .. player_name ..
             " used of skywars:totem_of_undying and brought back to life with 3 hp")
     end

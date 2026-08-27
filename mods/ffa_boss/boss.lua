@@ -1,8 +1,5 @@
-local boss = forgotten_boss
-local entity_name = "skywars:forgotten_player"
-
 local function broadcast(text)
-    core.chat_send_all(core.colorize("#C4B5FD", "[Forgotten] ") .. text)
+    core.chat_send_all(core.colorize("#d66823", "[Boss] ") .. text)
 end
 
 local function effect(pos, amount)
@@ -12,20 +9,20 @@ end
 
 local function valid_boss(object)
     local entity = object and object:get_luaentity()
-    return entity and entity.name == entity_name
+    return entity and entity.name == "ffa_boss:forgotten_player"
 end
 
-function boss.get_boss()
-    if valid_boss(boss.state.boss_object) then
-        return boss.state.boss_object
+function ffa_boss.get_boss()
+    if valid_boss(ffa_boss.state.boss_object) then
+        return ffa_boss.state.boss_object
     end
-    boss.state.boss_object = nil
+    ffa_boss.state.boss_object = nil
     return nil
 end
 
 local function update_nameplate(self)
     self.object:set_properties({
-        nametag = ("THE FORGOTTEN\n%d / %d HP"):format(math.max(0, self.health), boss.settings.max_hp),
+        nametag = ("THE FORGOTTEN\n%d / %d HP"):format(math.max(0, self.health), ffa_boss.settings.max_hp),
         nametag_color = "#C084FC",
     })
 end
@@ -78,26 +75,12 @@ local function void_burst(self, target)
 
     target:punch(self.object, 1, {
         full_punch_interval = 1,
-        damage_groups = {fleshy = 11},
+        damage_groups = {fleshy = 24},
     })
-    local velocity = vector.multiply(vector.direction(boss_pos, target_pos), 10)
-    velocity.y = 5
+    local velocity = vector.multiply(vector.direction(boss_pos, target_pos), 18)
+    velocity.y = 8
     target:add_velocity(velocity)
     effect(target_pos, 28)
-end
-
-local function rift_prison(self, target)
-    local pos = target:get_pos()
-    if not pos then
-        return
-    end
-
-    boss.place_rift_blocks(pos)
-    target:punch(self.object, 1, {
-        full_punch_interval = 1,
-        damage_groups = {fleshy = 6},
-    })
-    effect(pos, 20)
 end
 
 local function custom_step(self, dtime)
@@ -108,11 +91,11 @@ local function custom_step(self, dtime)
         update_nameplate(self)
     end
 
-    if now - (self.last_hit or now) >= boss.settings.idle_regen_delay then
+    if now - (self.last_hit or now) >= ffa_boss.settings.idle_regen_delay then
         self.regen_timer = (self.regen_timer or 0) + dtime
         if self.regen_timer >= 1 then
             self.regen_timer = self.regen_timer - 1
-            self.health = math.min(boss.settings.max_hp, self.health + boss.settings.idle_regen_per_second)
+            self.health = math.min(ffa_boss.settings.max_hp, self.health + ffa_boss.settings.idle_regen_per_second)
         end
     else
         self.regen_timer = 0
@@ -124,20 +107,13 @@ local function custom_step(self, dtime)
     end
 
     self.power_timer = (self.power_timer or 0) + dtime
-    if self.power_timer < (self.next_power or 10) then
+    if self.power_timer < (self.next_power or 5) then
         return
     end
     self.power_timer = 0
     self.next_power = math.random(10, 15)
 
-    local power = math.random(1, 3)
-    if power == 1 then
-        teleport_near(self, target)
-    elseif power == 2 then
-        rift_prison(self, target)
-    else
-        void_burst(self, target)
-    end
+    void_burst(self, target)
 end
 
 local function custom_punch(self, hitter)
@@ -147,46 +123,48 @@ local function custom_punch(self, hitter)
 
     self.last_hit = core.get_gametime()
     self.last_hitter = hitter:get_player_name()
-    if self.state == "attack" and math.random(1, 4) == 1 then
+    if self.state == "attack" and math.random(1, 5) == 1 then
         teleport_near(self, hitter)
     end
 end
 
 local function boss_death(self, killer)
-    if boss.state.loot_phase then
+    if ffa_boss.state.loot_phase then
         return
     end
-
-    boss.state.boss_object = nil
-    boss.state.loot_phase = true
-    boss.drop_rewards(self.object:get_pos())
+    ffa_boss.state.boss_object = nil
+    ffa_boss.state.loot_phase = true
+    ffa_boss.drop_rewards(ffa_boss.get_position("boss_spawn") or self.object:get_pos())
     local winner = killer and killer:get_player_name() or self.last_hitter or "the arena"
-    broadcast(("The Forgotten was defeated by %s. Loot is available for %d seconds.")
-        :format(winner, boss.settings.reward_time))
+    broadcast(("The Forgotten was defeated by %s."):format(winner))
 
-    local event_id = boss.state.event_id
-    core.after(boss.settings.reward_time, function()
-        if boss.state.event_id ~= event_id or not boss.state.loot_phase then
+    for name in pairs(ffa_boss.state.members) do
+        core.chat_send_player(name, core.colorize("#d66823", "[Boss] ") .. 
+            ("Teleporting in %d seconds ..."):format(ffa_boss.settings.reward_time))
+    end
+
+    core.after(ffa_boss.settings.reward_time, function()
+        if not ffa_boss.state.loot_phase then
             return
         end
-        boss.return_all()
-        boss.state.active = false
-        boss.state.loot_phase = false
+        ffa_boss.return_all()
+        ffa_boss.state.active = false
+        ffa_boss.state.loot_phase = false
         broadcast("The Forgotten event is over.")
     end)
 end
 
-mobs:register_mob(entity_name, {
+mobs:register_mob("ffa_boss:forgotten_player", {
     type = "monster",
-    hp_min = boss.settings.max_hp,
-    hp_max = boss.settings.max_hp,
-    armor = 12,
+    hp_min = ffa_boss.settings.max_hp,
+    hp_max = ffa_boss.settings.max_hp,
+    armor = 30,
     walk_velocity = 3.2,
     run_velocity = 4.2,
     randomly_turn = true,
     jump_height = 1.4,
     view_range = 28,
-    damage = 13,
+    damage = 22,
     knock_back = false,
     lava_damage = 0,
     fire_damage = 0,
@@ -208,17 +186,9 @@ mobs:register_mob(entity_name, {
     selectionbox = {-0.7, 0, -0.7, 0.7, 2.4, 0.7},
     glow = 3,
     textures = {
-        "skywars_forgotten_player.png",
+        "ffa_boss_forgotten.png",
         "blank.png",
         "skywars_shadow_sword.png",
-    },
-    sounds = {
-        random = "skywars_forgotten_player",
-        war_cry = "skywars_forgotten_player",
-        attack = "skywars_forgotten_player",
-        damage = "skywars_forgotten_player",
-        death = "skywars_forgotten_player",
-        distance = 28,
     },
     animation = {
         stand_start = 0,
@@ -232,9 +202,9 @@ mobs:register_mob(entity_name, {
     },
     after_activate = function(self)
         self.last_hit = core.get_gametime()
-        self.next_power = 8
-        boss.state.boss_object = self.object
-        boss.state.active = true
+        self.next_power = 5
+        ffa_boss.state.boss_object = self.object
+        ffa_boss.state.active = true
         update_nameplate(self)
     end,
     do_custom = custom_step,
@@ -242,24 +212,23 @@ mobs:register_mob(entity_name, {
     on_death = boss_death,
 })
 
-function boss.start_event()
-    if boss.state.active then
+function ffa_boss.start_event()
+    if ffa_boss.state.active then
         return false, "The Forgotten event is already running."
     end
-    if not boss.is_ready() then
-        return false, "Set the boss spawn and player spawn before starting the event."
+    if not ffa_boss.is_ready() then
+        return false, "The zone isn't completely defined."
     end
 
-    boss.state.event_id = boss.state.event_id + 1
-    boss.state.members = {}
-    boss.state.loot_phase = false
-    local object = core.add_entity(boss.get_position("boss_spawn"), entity_name)
+    ffa_boss.state.members = {}
+    ffa_boss.state.loot_phase = false
+    local object = core.add_entity(ffa_boss.get_position("boss_spawn"), "ffa_boss:forgotten_player")
     if not valid_boss(object) then
         return false, "The Forgotten could not be spawned."
     end
 
-    boss.state.active = true
-    boss.state.boss_object = object
-    broadcast("The Forgotten has appeared. Use /boss join to fight it.")
+    ffa_boss.state.active = true
+    ffa_boss.state.boss_object = object
+    broadcast(("The Forgotten has appeared. Use %s to fight it."):format(core.colorize("cyan", "/boss join")))
     return true
 end

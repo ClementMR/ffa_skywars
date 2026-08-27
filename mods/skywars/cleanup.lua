@@ -222,7 +222,10 @@ end
 
 local function transition_players(map_id)
 	for _, player in ipairs(core.get_connected_players()) do
-		if not core.check_player_privs(player:get_player_name(), {creative = true}) then
+		local name = player:get_player_name()
+		if not core.check_player_privs(name, {creative = true}) and
+			(core.global_exists("ffa_boss") and not ffa_boss.is_member(name)) 
+		then
 			skywars.teleport_player(player, map_id)
 		end
 	end

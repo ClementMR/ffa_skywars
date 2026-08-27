@@ -202,33 +202,6 @@ function skywars.set_map_enabled(map_id, enabled)
 	return true
 end
 
-function skywars.rename_map(map_id, new_name)
-	local map = skywars.maps[map_id]
-	local new_id = normalize_id(new_name)
-	if not map then
-		return false, "This map does not exist."
-	end
-	if not new_id then
-		return false, "Use 3 to 32 letters, digits, underscores or hyphens."
-	end
-	if new_id ~= map_id and skywars.maps[new_id] then
-		return false, "A map with this name already exists."
-	end
-	if new_id == map_id then
-		return true, map
-	end
-
-	skywars.maps[map_id] = nil
-	map.id = new_id
-	map.updated_at = core.get_gametime()
-	skywars.maps[new_id] = map
-	if skywars.current_map == map_id then
-		skywars.current_map = new_id
-	end
-	skywars.save_maps()
-	return true, map
-end
-
 function skywars.is_rotation_paused()
 	return skywars.rotation_paused == true
 end

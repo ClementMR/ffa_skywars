@@ -69,7 +69,7 @@ core.register_craftitem("wind_pearl:wind_pearl", {
 	end,
 })
 
-local function apply_knockback(center, attacker_name)
+local function apply_knockback(center)
 	local objects = core.get_objects_inside_radius(center, config.knockback_radius)
 	local processed = 0
 
@@ -96,12 +96,6 @@ local function apply_knockback(center, attacker_name)
 
 				if can_knockback then
 					object:add_velocity(velocity)
-					if object:is_player() then
-						local stats_api = rawget(_G, "player_stats")
-						if stats_api and stats_api.record_attack then
-							stats_api.record_attack(object, attacker_name, "wind_pearl:wind_pearl")
-						end
-					end
 					processed = processed + 1
 				end
 			end
@@ -164,7 +158,7 @@ core.register_entity("wind_pearl:thrown_wind_pearl", {
 			return
 		end
 
-		apply_knockback(pos, self.player_name)
+		apply_knockback(pos)
 		core.sound_play("wind_pearl_throw", {
 			pos = pos,
 			gain = 0.8,

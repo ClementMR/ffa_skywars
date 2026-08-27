@@ -1,8 +1,4 @@
 local players_timer = {}
-local last_attackers = {}
-local ffa_timers = rawget(_G, "ffa_timers") or {}
-
-rawset(_G, "ffa_timers", ffa_timers)
 
 local combat_timer = core.settings:get("combat_timer") or 8
 local immunity_timer = core.settings:get("immunity_timer") or 14
@@ -50,30 +46,6 @@ local function update_timer(player, timer, text, color, timer_name)
     players_timer[name].active = timer_name
 end
 
-local function record_attack(victim, attacker)
-    if not victim or not attacker or not victim:is_player() or not attacker:is_player()
-            or victim == attacker then
-        return false
-    end
-
-    local victim_name = victim:get_player_name()
-    local attacker_name = attacker:get_player_name()
-    if core.is_creative_enabled(victim_name) or core.is_creative_enabled(attacker_name) then
-        return false
-    end
-
-    last_attackers[victim_name] = {
-        name = attacker_name,
-        item = attacker:get_wielded_item():get_name(),
-        time = core.get_gametime(),
-    }
-    return true
-end
-
-ffa_timers.get_last_attacker = function(player_name)
-    return last_attackers[player_name]
-end
-
 core.register_on_joinplayer(function(player)
     if core.is_creative_enabled(player:get_player_name()) then
         return
@@ -92,14 +64,7 @@ core.register_on_respawnplayer(function(player)
     update_timer(player, immunity_timer, S("You are immune"), 0x42D3F2, "immune")
 end)
 
-core.register_on_dieplayer(function(player)
-    last_attackers[player:get_player_name()] = nil
-end)
-
 core.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool_capabilities, dir, damage)
-    if not hitter or not hitter:is_player() then
-        return false
-    end
     local name = hitter:get_player_name()
 
     if core.is_creative_enabled(name) then
@@ -118,10 +83,6 @@ core.register_on_punchplayer(function(player, hitter, time_from_last_punch, tool
         --hitter:set_hp(hitter:get_hp()-0.5)
 
         return true
-    end
-
-    if tonumber(damage) and damage > 0 then
-        record_attack(player, hitter)
     end
 end)
 
@@ -187,7 +148,6 @@ end
 
 core.register_on_leaveplayer(function(player, timed_out)
     local name = player:get_player_name()
-    local combat_log = is_fighting(name) and last_attackers[name]
 
     local timer = players_timer[name]
     if timer then
@@ -209,15 +169,7 @@ core.register_on_leaveplayer(function(player, timed_out)
         end
     end
 
-    if combat_log then
-        local stats_api = rawget(_G, "player_stats")
-        if stats_api and stats_api.record_combat_log then
-            stats_api.record_combat_log(player, combat_log.name, combat_log.item)
-        end
-    end
-
     players_timer[name] = nil
-    last_attackers[name] = nil
 end)
 
 core.register_chatcommand("active", {

@@ -1,9 +1,7 @@
-local boss = forgotten_boss
-
-boss.settings = {
-    max_hp = 850,
+ffa_boss.settings = {
+    max_hp = 1000,
     max_players = 10,
-    reward_time = 60,
+    reward_time = 30,
     idle_regen_delay = 12,
     idle_regen_per_second = 1,
 }
@@ -38,7 +36,7 @@ local function clean_position(pos)
 end
 
 local function load_config()
-    local saved = core.deserialize(boss.storage:get_string("config"))
+    local saved = core.deserialize(ffa_boss.storage:get_string("config"))
     local config = {}
 
     if type(saved) == "table" then
@@ -50,38 +48,38 @@ local function load_config()
     return config
 end
 
-boss.config = load_config()
+ffa_boss.config = load_config()
 
-function boss.save_config()
-    boss.storage:set_string("config", core.serialize(boss.config))
+function ffa_boss.save_config()
+    ffa_boss.storage:set_string("config", core.serialize(ffa_boss.config))
 end
 
-function boss.set_position(key, pos)
+function ffa_boss.set_position(key, pos)
     if not is_position_key(key) then
         return false
     end
 
-    boss.config[key] = clean_position(pos)
-    boss.save_config()
+    ffa_boss.config[key] = clean_position(pos)
+    ffa_boss.save_config()
     return true
 end
 
-function boss.get_position(key)
-    local pos = boss.config[key]
+function ffa_boss.get_position(key)
+    local pos = ffa_boss.config[key]
     return pos and vector.new(pos) or nil
 end
 
-function boss.is_ready()
-    return boss.config.boss_spawn and boss.config.player_spawn
+function ffa_boss.is_ready()
+    return ffa_boss.config.boss_spawn and ffa_boss.config.player_spawn
 end
 
-function boss.position_text(pos)
+function ffa_boss.position_text(pos)
     return ("(%d, %d, %d)"):format(pos.x, pos.y, pos.z)
 end
 
-function boss.member_count()
+function ffa_boss.member_count()
     local count = 0
-    for _ in pairs(boss.state.members) do
+    for _ in pairs(ffa_boss.state.members) do
         count = count + 1
     end
     return count

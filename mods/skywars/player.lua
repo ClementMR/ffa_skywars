@@ -65,19 +65,19 @@ core.register_on_respawnplayer(function(player)
     --give_starter_items(player)
 end)
 
-core.register_on_placenode(function(pos, newnode, placer)
-    if not placer or core.is_creative_enabled(placer:get_player_name()) then
-        return
+local old_is_protected = core.is_protected
+
+core.is_protected = function(pos, name)
+    if core.is_creative_enabled(name) then
+        return false
     end
 
-	-- `pos` is the exact node position.  Checking the player's floating
-	-- ObjectRef position as well incorrectly rejected valid blocks at a cube
-	-- border (for example while standing on the outermost node).
-	if not skywars.is_position_in_map(pos) then
-		core.remove_node(pos)
-		return true
-	end
-end)
+    if not skywars.is_position_in_map(pos) then
+        return true
+    end
+
+    return old_is_protected(pos, name)
+end
 
 local timer
 core.register_globalstep(function(dtime)

@@ -62,6 +62,17 @@ combat_timer (Combat Timer) int 8
 # Change the immunity timer
 immunity_timer (Immunity Timer) int 14
 
+[Anti VPN]
+# Cache successful IP verification results to prevent repeated external calls.
+anti_vpn_cache_ttl (Verified IP cache [seconds]) int 900 60
+
+# Briefly cache errors so an unavailable provider cannot be retried in a loop.
+anti_vpn_failure_cache_ttl (Failed verification cache [seconds]) int 30 1
+
+# Bound outstanding requests and the total request rate from connection attempts.
+anti_vpn_max_pending (Maximum pending verifications) int 8 1
+anti_vpn_max_requests_per_minute (Maximum verification requests per minute) int 20 1
+
 [Skywars maps]
 # Seconds between automatic map rotations and cleanups.
 skywars_cleanup_interval (Map cleanup interval [seconds]) int 2700 60

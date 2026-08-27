@@ -70,14 +70,8 @@ local function add_entity_tag(player, attempts)
 end
 
 function playertag.get(player)
-    if not player then
-        return nil
-    end
-
     local tag = players[player:get_player_name()]
-    local entity = tag.entity
-
-    return entity and entity:get_luaentity() or nil
+    return tag and tag.entity or nil
 end
 
 function playertag.get_all()
@@ -85,11 +79,8 @@ function playertag.get_all()
 end
 
 function playertag.remove(player)
-    if not player then
-        return
-    end
-
-    local tag = players[player:get_player_name()]
+    local name = player:get_player_name()
+    local tag = players[name]
 
     if not tag or not tag.entity then
         return
@@ -97,11 +88,11 @@ function playertag.remove(player)
 
     local entity = tag.entity
 
-    if entity and entity:get_luaentity() then
+    if entity then
         entity:remove()
     end
 
-    tag.entity = nil
+    players[name] = nil
 end
 
 function playertag.update(player)
@@ -147,6 +138,5 @@ end)
 core.register_on_leaveplayer(function(player)
     if playertag.get(player) then
         playertag.remove(player)
-        players[player:get_player_name()] = nil
     end
 end)

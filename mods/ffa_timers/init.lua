@@ -149,8 +149,9 @@ end
 core.register_on_leaveplayer(function(player, timed_out)
     local name = player:get_player_name()
 
-    if timed_out then
-        return
+    local timer = players_timer[name]
+    if timer then
+        timer:cancel()
     end
 
     if is_fighting(name) then

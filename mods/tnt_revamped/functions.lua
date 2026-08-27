@@ -172,7 +172,7 @@ local function calc_velocity(pos1, pos2, old_vel, power)
 	return vel
 end
 
-local function entity_physics(pos, radius, drops, in_water)
+local function entity_physics(pos, radius, drops, in_water, owner)
 	local objs = get_objects_inside_radius(pos, radius)
 	for _, obj in pairs(objs) do
 		local obj_pos = obj:get_pos()
@@ -185,6 +185,10 @@ local function entity_physics(pos, radius, drops, in_water)
 					obj_vel, radius * player_velocity_mul))
 
 			if not in_water or (in_water and tnt_damage_entities) then
+				local stats_api = rawget(_G, "player_stats")
+				if stats_api and stats_api.record_attack then
+					stats_api.record_attack(obj, owner, "tnt:tnt")
+				end
 				local hp = obj:get_hp() - damage
 				if hp < 0 then
 					hp = 0
@@ -348,7 +352,7 @@ function tnt.boom(pos, def, owner, in_water)
 			def1.ignore_on_blast, owner, def1.explode_center, in_water)
 	-- append entity drops
 	local damage_radius = (radius / max(1, def1.radius)) * def1.damage_radius
-	entity_physics(pos, damage_radius, drops, in_water)
+	entity_physics(pos, damage_radius, drops, in_water, owner)
 	if not def1.disable_drops then
 		eject_drops(drops, pos, radius)
 	end

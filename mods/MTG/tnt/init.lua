@@ -161,7 +161,7 @@ local function calc_velocity(pos1, pos2, old_vel, power)
 	return vel
 end
 
-local function entity_physics(pos, radius, drops)
+local function entity_physics(pos, radius, drops, owner)
 	local objs = minetest.get_objects_inside_radius(pos, radius)
 	for _, obj in pairs(objs) do
 		local obj_pos = obj:get_pos()
@@ -174,6 +174,10 @@ local function entity_physics(pos, radius, drops)
 			local moveoff = vector.multiply(dir, 2 / dist * radius)
 			obj:add_velocity(moveoff)
 
+			local stats_api = rawget(_G, "player_stats")
+			if stats_api and stats_api.record_attack then
+				stats_api.record_attack(obj, owner, "tnt:tnt")
+			end
 			obj:set_hp(obj:get_hp() - damage)
 		else
 			local luaobj = obj:get_luaentity()
@@ -446,7 +450,7 @@ function tnt.boom(pos, def)
 			def.ignore_on_blast, owner, def.explode_center)
 	-- append entity drops
 	local damage_radius = (radius / math.max(1, def.radius)) * def.damage_radius
-	entity_physics(pos, damage_radius, drops)
+	entity_physics(pos, damage_radius, drops, owner)
 	if not def.disable_drops then
 		eject_drops(drops, pos, radius)
 	end

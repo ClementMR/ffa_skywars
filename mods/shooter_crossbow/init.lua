@@ -98,7 +98,13 @@ local function strike(arrow, pointed_thing, name)
 				if groups.fleshy then
 					shooter.spawn_particles(hit_pos)
 				end
-				target:punch(object, nil, arrow_tool_caps, dir)
+				local stats_api = rawget(_G, "player_stats")
+				if stats_api and stats_api.record_attack then
+					stats_api.record_attack(target, puncher, "shooter_crossbow:crossbow")
+				end
+				-- The player, rather than the arrow entity, must be the puncher so
+				-- combat systems can identify the shooter.
+				target:punch(puncher, nil, arrow_tool_caps, dir)
 				if config.arrow_object_attach then
 					local pos = vector.multiply(vector.subtract(target:get_pos(),
 						hit_pos), -10)

@@ -22,7 +22,8 @@ local files = {
     "entities",
     "vanish",
     "commands",
-    "golden_apple"
+    "golden_apple",
+    "hit_particles"
 }
 
 for _, file in ipairs(files) do

@@ -1,15 +1,17 @@
 local boss = forgotten_boss
-local entity_name = "forgotten_boss:the_forgotten"
+local entity_name = "skywars:forgotten_player"
 
 local function broadcast(text)
     core.chat_send_all(core.colorize("#C4B5FD", "[Forgotten] ") .. text)
 end
 
+local function effect(pos, amount)
+    mobs:effect(pos, amount, "default_mese_crystal_fragment.png^[colorize:#8B5CF6:180",
+        1, 1.5, 3, 10, 1, true)
+end
+
 local function valid_boss(object)
-    if not object then
-        return false
-    end
-    local entity = object:get_luaentity()
+    local entity = object and object:get_luaentity()
     return entity and entity.name == entity_name
 end
 
@@ -21,351 +23,243 @@ function boss.get_boss()
     return nil
 end
 
-local function player_target(position)
-    local target
-    local nearest
+local function update_nameplate(self)
+    self.object:set_properties({
+        nametag = ("THE FORGOTTEN\n%d / %d HP"):format(math.max(0, self.health), boss.settings.max_hp),
+        nametag_color = "#C084FC",
+    })
+end
 
-    for name in pairs(boss.state.members) do
-        local player = core.get_player_by_name(name)
-        local player_pos = player and player:get_pos()
-        if player_pos and player:get_hp() > 0 and boss.in_zone(player_pos) then
-            local distance = vector.distance(position, player_pos)
-            if not nearest or distance < nearest then
-                target = player
-                nearest = distance
+local function open_positions(pos)
+    local positions = {}
+    local center = vector.round(pos)
+
+    for x = -3, 3 do
+        for z = -3, 3 do
+            local target = {x = center.x + x, y = center.y, z = center.z + z}
+            local here = core.get_node_or_nil(target)
+            local above = core.get_node_or_nil(vector.offset(target, 0, 1, 0))
+            local here_def = here and core.registered_nodes[here.name]
+            local above_def = above and core.registered_nodes[above.name]
+            if here_def and above_def and here_def.buildable_to and above_def.buildable_to then
+                table.insert(positions, target)
             end
         end
     end
 
-    return target, nearest
+    return positions
 end
 
-local function damage_player(entity, player, amount)
-    if not player or player:get_hp() <= 0 then
-        return
-    end
-
-    player:punch(entity.object, 1, {
-        full_punch_interval = 1,
-        damage_groups = {fleshy = amount},
-    })
-end
-
-local function hit_particles(pos)
-    core.add_particlespawner({
-        amount = 25,
-        time = 0.15,
-        minpos = vector.subtract(pos, 0.5),
-        maxpos = vector.add(pos, 0.5),
-        minvel = {x = -2, y = 1, z = -2},
-        maxvel = {x = 2, y = 4, z = 2},
-        minacc = {x = 0, y = -5, z = 0},
-        maxacc = {x = 0, y = -5, z = 0},
-        minexptime = 0.4,
-        maxexptime = 1.2,
-        minsize = 2,
-        maxsize = 5,
-        texture = "default_mese_crystal_fragment.png^[colorize:#8B5CF6:180",
-        glow = 8,
-    })
-end
-
-local function teleport_near_target(entity, target)
+local function teleport_near(self, target)
     local target_pos = target:get_pos()
     if not target_pos then
         return
     end
 
-    for _ = 1, 10 do
-        local angle = math.random() * math.pi * 2
-        local distance = math.random(4, 7)
-        local pos = {
-            x = target_pos.x + math.cos(angle) * distance,
-            y = target_pos.y + 1,
-            z = target_pos.z + math.sin(angle) * distance,
-        }
-        local below = core.get_node_or_nil(vector.offset(pos, 0, -1, 0))
-        local here = core.get_node_or_nil(pos)
-        local above = core.get_node_or_nil(vector.offset(pos, 0, 1, 0))
-        local here_def = here and core.registered_nodes[here.name]
-        local above_def = above and core.registered_nodes[above.name]
-
-        if boss.in_zone(pos)
-            and below
-            and here_def and here_def.buildable_to
-            and above_def and above_def.buildable_to then
-            entity.object:set_pos(pos)
-            entity.object:set_velocity(vector.zero())
-            hit_particles(pos)
-            return
-        end
+    local positions = open_positions(target_pos)
+    if #positions == 0 then
+        return
     end
+
+    local from = self.object:get_pos()
+    local destination = positions[math.random(#positions)]
+    effect(from, 18)
+    self.object:set_pos(destination)
+    effect(destination, 18)
+    self:mob_sound("skywars_forgotten_player")
 end
 
-local function rift_cage(entity, target)
+local function void_burst(self, target)
+    local boss_pos = self.object:get_pos()
+    local target_pos = target:get_pos()
+    if not boss_pos or not target_pos then
+        return
+    end
+
+    target:punch(self.object, 1, {
+        full_punch_interval = 1,
+        damage_groups = {fleshy = 11},
+    })
+    local velocity = vector.multiply(vector.direction(boss_pos, target_pos), 10)
+    velocity.y = 5
+    target:add_velocity(velocity)
+    effect(target_pos, 28)
+end
+
+local function rift_prison(self, target)
     local pos = target:get_pos()
     if not pos then
         return
     end
 
     boss.place_rift_blocks(pos)
-    damage_player(entity, target, 5)
-    hit_particles(pos)
-    core.sound_play("default_dig_metal", {pos = pos, gain = 0.7, max_hear_distance = 24})
-end
-
-local function soul_bolt(entity, target)
-    local from = entity.object:get_pos()
-    local pos = target:get_pos()
-    if not from or not pos then
-        return
-    end
-
-    damage_player(entity, target, 9)
-    target:add_velocity(vector.multiply(vector.direction(from, pos), 7))
-    hit_particles(pos)
-    core.sound_play("default_mese_crystal_fragment", {pos = pos, gain = 0.8, max_hear_distance = 24})
-end
-
-local function shockwave(entity, position)
-    for name in pairs(boss.state.members) do
-        local player = core.get_player_by_name(name)
-        local player_pos = player and player:get_pos()
-        if player_pos then
-            local distance = vector.distance(position, player_pos)
-            if distance <= 12 then
-                local velocity = vector.multiply(vector.direction(position, player_pos), 11)
-                velocity.y = 5
-                player:add_velocity(velocity)
-                damage_player(entity, player, 6)
-            end
-        end
-    end
-    hit_particles(position)
-    core.sound_play("tnt_explode", {pos = position, gain = 0.45, max_hear_distance = 32})
-end
-
-local function set_nameplate(entity)
-    local hp = math.max(0, entity.object:get_hp())
-    entity.object:set_properties({
-        nametag = core.colorize("#C084FC", ("THE FORGOTTEN\n%d / %d HP"):format(hp, boss.settings.max_hp)),
-        nametag_color = "#C084FC",
+    target:punch(self.object, 1, {
+        full_punch_interval = 1,
+        damage_groups = {fleshy = 6},
     })
-    boss.update_all_huds(hp, boss.settings.max_hp)
+    effect(pos, 20)
 end
 
-function boss.finish_event(reason)
-    boss.state.event_id = boss.state.event_id + 1
-    boss.state.event_open = false
-    boss.state.event_active = false
-    boss.state.boss_object = nil
-    boss.return_all(reason)
-end
+local function custom_step(self, dtime)
+    local now = core.get_gametime()
+    self.name_timer = (self.name_timer or 0) + dtime
+    if self.name_timer >= 0.5 then
+        self.name_timer = 0
+        update_nameplate(self)
+    end
 
-local function defeat(entity)
-    if entity.dead then
+    if now - (self.last_hit or now) >= boss.settings.idle_regen_delay then
+        self.regen_timer = (self.regen_timer or 0) + dtime
+        if self.regen_timer >= 1 then
+            self.regen_timer = self.regen_timer - 1
+            self.health = math.min(boss.settings.max_hp, self.health + boss.settings.idle_regen_per_second)
+        end
+    else
+        self.regen_timer = 0
+    end
+
+    local target = self.attack
+    if not target or not target:is_player() or target:get_hp() <= 0 then
         return
     end
-    entity.dead = true
-    local pos = entity.object:get_pos() or boss.get_position("spawn")
-    local winner = entity.last_hitter or "the arena"
 
-    boss.state.event_open = false
-    boss.state.event_active = false
+    self.power_timer = (self.power_timer or 0) + dtime
+    if self.power_timer < (self.next_power or 10) then
+        return
+    end
+    self.power_timer = 0
+    self.next_power = math.random(10, 15)
+
+    local power = math.random(1, 3)
+    if power == 1 then
+        teleport_near(self, target)
+    elseif power == 2 then
+        rift_prison(self, target)
+    else
+        void_burst(self, target)
+    end
+end
+
+local function custom_punch(self, hitter)
+    if not hitter or not hitter:is_player() then
+        return
+    end
+
+    self.last_hit = core.get_gametime()
+    self.last_hitter = hitter:get_player_name()
+    if self.state == "attack" and math.random(1, 4) == 1 then
+        teleport_near(self, hitter)
+    end
+end
+
+local function boss_death(self, killer)
+    if boss.state.loot_phase then
+        return
+    end
+
     boss.state.boss_object = nil
-    boss.drop_rewards(pos)
-    broadcast(("The Forgotten was defeated by %s. Collect the scattered rewards; the arena closes in %d seconds.")
+    boss.state.loot_phase = true
+    boss.drop_rewards(self.object:get_pos())
+    local winner = killer and killer:get_player_name() or self.last_hitter or "the arena"
+    broadcast(("The Forgotten was defeated by %s. Loot is available for %d seconds.")
         :format(winner, boss.settings.reward_time))
 
-    entity.object:set_velocity(vector.zero())
-    entity.object:set_properties({pointable = false, nametag = ""})
-    core.after(5, function(object)
-        if valid_boss(object) then
-            object:remove()
-        end
-    end, entity.object)
+    local event_id = boss.state.event_id
     core.after(boss.settings.reward_time, function()
-        boss.return_all("The Forgotten event is over.")
+        if boss.state.event_id ~= event_id or not boss.state.loot_phase then
+            return
+        end
+        boss.return_all()
+        boss.state.active = false
+        boss.state.loot_phase = false
+        broadcast("The Forgotten event is over.")
     end)
 end
 
-core.register_entity(entity_name, {
-    initial_properties = {
-        hp_max = boss.settings.max_hp,
-        physical = true,
-        collide_with_objects = true,
-        pointable = true,
-        visual = "sprite",
-        visual_size = {x = 5, y = 5},
-        textures = {"forgotten_boss_wither.png"},
-        use_texture_alpha = "blend",
-        glow = 8,
-        collisionbox = {-0.8, -0.2, -0.8, 0.8, 2.8, 0.8},
-        selectionbox = {-1.2, -0.2, -1.2, 1.2, 3.2, 1.2},
-        armor_groups = {fleshy = 100},
-        nametag = "THE FORGOTTEN",
-        nametag_color = "#C084FC",
-        static_save = false,
+mobs:register_mob(entity_name, {
+    type = "monster",
+    hp_min = boss.settings.max_hp,
+    hp_max = boss.settings.max_hp,
+    armor = 12,
+    walk_velocity = 3.2,
+    run_velocity = 4.2,
+    randomly_turn = true,
+    jump_height = 1.4,
+    view_range = 28,
+    damage = 13,
+    knock_back = false,
+    lava_damage = 0,
+    fire_damage = 0,
+    suffocation = 0,
+    floats = false,
+    reach = 5,
+    fear_height = 0,
+    attack_chance = 0,
+    attack_monsters = true,
+    attack_animals = true,
+    attack_players = true,
+    attack_type = "dogfight",
+    pathfinding = 1,
+    makes_footstep_sound = true,
+    visual = "mesh",
+    visual_size = {x = 1.35, y = 1.35},
+    mesh = "3d_armor_character.b3d",
+    collisionbox = {-0.45, 0, -0.45, 0.45, 2.1, 0.45},
+    selectionbox = {-0.7, 0, -0.7, 0.7, 2.4, 0.7},
+    glow = 3,
+    textures = {
+        "skywars_forgotten_player.png",
+        "blank.png",
+        "skywars_shadow_sword.png",
     },
-
-    on_activate = function(self)
+    sounds = {
+        random = "skywars_forgotten_player",
+        war_cry = "skywars_forgotten_player",
+        attack = "skywars_forgotten_player",
+        damage = "skywars_forgotten_player",
+        death = "skywars_forgotten_player",
+        distance = 28,
+    },
+    animation = {
+        stand_start = 0,
+        stand_end = 79,
+        walk_start = 168,
+        walk_end = 187,
+        run_start = 168,
+        run_end = 187,
+        punch_start = 190,
+        punch_end = 198,
+    },
+    after_activate = function(self)
         self.last_hit = core.get_gametime()
-        self.next_power = core.get_gametime() + 8
-        self.next_attack = 0
-        self.next_hud = 0
+        self.next_power = 8
         boss.state.boss_object = self.object
-        boss.state.event_active = true
-        set_nameplate(self)
+        boss.state.active = true
+        update_nameplate(self)
     end,
-
-    on_punch = function(self, puncher)
-        if puncher and puncher:is_player() then
-            self.last_hit = core.get_gametime()
-            self.last_hitter = puncher:get_player_name()
-            hit_particles(self.object:get_pos())
-        end
-    end,
-
-    on_step = function(self, dtime)
-        if self.dead then
-            return
-        end
-
-        local position = self.object:get_pos()
-        if not position then
-            return
-        end
-
-        if self.object:get_hp() <= 0 then
-            defeat(self)
-            return
-        end
-
-        local now = core.get_gametime()
-        if now >= self.next_hud then
-            self.next_hud = now + 0.5
-            set_nameplate(self)
-        end
-
-        if not boss.in_zone(position) then
-            local spawn = boss.get_position("spawn")
-            if spawn then
-                self.object:set_pos(spawn)
-                self.object:set_velocity(vector.zero())
-                position = spawn
-            end
-        end
-
-        local target, distance = player_target(position)
-        if target then
-            local target_pos = target:get_pos()
-            local direction = vector.direction(position, vector.offset(target_pos, 0, 1, 0))
-            if distance > 3 then
-                self.object:set_velocity(vector.multiply(direction, 4.2))
-            else
-                self.object:set_velocity(vector.zero())
-                if now >= self.next_attack then
-                    self.next_attack = now + 1.4
-                    damage_player(self, target, 8)
-                    hit_particles(target_pos)
-                end
-            end
-            self.object:set_yaw(core.dir_to_yaw(direction))
-
-            if now >= self.next_power then
-                self.next_power = now + math.random(10, 15)
-                local power = math.random(1, 4)
-                if power == 1 then
-                    teleport_near_target(self, target)
-                elseif power == 2 then
-                    rift_cage(self, target)
-                elseif power == 3 then
-                    soul_bolt(self, target)
-                else
-                    shockwave(self, position)
-                end
-            end
-        else
-            self.object:set_velocity(vector.zero())
-        end
-
-        if now - self.last_hit >= boss.settings.idle_regen_delay then
-            self.regen_time = (self.regen_time or 0) + dtime
-            if self.regen_time >= 1 then
-                self.regen_time = self.regen_time - 1
-                local hp = self.object:get_hp()
-                if hp < boss.settings.max_hp then
-                    self.object:set_hp(math.min(boss.settings.max_hp, hp + boss.settings.idle_regen_per_second))
-                end
-            end
-        else
-            self.regen_time = 0
-        end
-    end,
+    do_custom = custom_step,
+    do_punch = custom_punch,
+    on_death = boss_death,
 })
 
 function boss.start_event()
-    if boss.state.event_active then
-        return false, "The Forgotten is already in the arena."
+    if boss.state.active then
+        return false, "The Forgotten event is already running."
     end
     if not boss.is_ready() then
-        return false, "Set pos1, pos2, entry, exit and spawn before starting an event."
+        return false, "Set the boss spawn and player spawn before starting the event."
     end
 
     boss.state.event_id = boss.state.event_id + 1
-    boss.state.event_open = false
-    local object = core.add_entity(boss.get_position("spawn"), entity_name)
+    boss.state.members = {}
+    boss.state.loot_phase = false
+    local object = core.add_entity(boss.get_position("boss_spawn"), entity_name)
     if not valid_boss(object) then
         return false, "The Forgotten could not be spawned."
     end
 
-    boss.state.event_active = true
+    boss.state.active = true
     boss.state.boss_object = object
-    broadcast("The Forgotten has appeared. Use a Golden Ticket or /boss enter to join the fight.")
+    broadcast("The Forgotten has appeared. Use /boss join to fight it.")
     return true
-end
-
-function boss.open_event(delay)
-    if boss.state.event_open or boss.state.event_active then
-        return false, "An event is already open."
-    end
-    if not boss.is_ready() then
-        return false, "Set pos1, pos2, entry, exit and spawn before opening an event."
-    end
-
-    delay = math.max(0, math.floor(tonumber(delay) or boss.settings.open_delay))
-    boss.state.event_id = boss.state.event_id + 1
-    local event_id = boss.state.event_id
-    boss.state.event_open = true
-
-    if delay == 0 then
-        return boss.start_event()
-    end
-
-    broadcast(("The Forgotten awakens in %d seconds. Bring a Golden Ticket and use /boss enter."):format(delay))
-    for _, warning in ipairs({60, 30, 10}) do
-        if delay > warning then
-            core.after(delay - warning, function()
-                if boss.state.event_id == event_id and boss.state.event_open then
-                    broadcast(("The Forgotten arrives in %d seconds."):format(warning))
-                end
-            end)
-        end
-    end
-    core.after(delay, function()
-        if boss.state.event_id == event_id and boss.state.event_open then
-            boss.start_event()
-        end
-    end)
-    return true
-end
-
-function boss.stop_event()
-    boss.state.event_id = boss.state.event_id + 1
-    boss.state.event_open = false
-    local object = boss.get_boss()
-    if object then
-        object:remove()
-    end
-    boss.finish_event("The Forgotten event was closed by an administrator.")
 end

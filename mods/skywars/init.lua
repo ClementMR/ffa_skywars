@@ -19,7 +19,6 @@ local files = {
     "fireball",
     "totem",
     "cleanup",
-    "entities",
     "vanish",
     "commands",
 	"tips",

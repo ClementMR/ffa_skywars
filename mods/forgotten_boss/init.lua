@@ -6,17 +6,16 @@ boss.modpath = core.get_modpath(boss.modname)
 boss.storage = core.get_mod_storage()
 boss.state = boss.state or {
     members = {},
-    event_open = false,
-    event_active = false,
+    active = false,
+    loot_phase = false,
     event_id = 0,
     boss_object = nil,
 }
 
 for _, file in ipairs({
     "config.lua",
-    "zone.lua",
+    "players.lua",
     "loot.lua",
-    "hud.lua",
     "boss.lua",
     "commands.lua",
 }) do

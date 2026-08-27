@@ -1,12 +1,5 @@
-# Forgotten boss arena
+# Forgotten boss event
 
-Build the arena, then stand at each location and run these as an `ffa_manager`:
+An `ffa_manager` stands at the boss position and runs `/boss boss_spawn`, then stands at the player arrival position and runs `/boss player_spawn`.
 
-1. `/boss pos1` and `/boss pos2` for the opposite arena corners.
-2. `/boss entry` for the player arrival point inside the arena.
-3. `/boss exit` for the player return point outside the arena.
-4. `/boss spawn` for The Forgotten.
-
-Open an event with `/boss open` (60-second warning by default), or `/boss open 180` for a three-minute warning. `/boss start` spawns the boss immediately. Players join with a Golden Ticket by using it or running `/boss enter`; `/boss leave` is always available.
-
-Administrators can give tickets with `/boss ticket <player> [count]`, inspect the state with `/boss status`, list fighters with `/boss players`, and cancel an event with `/boss stop`.
+Start the boss manually with `/boss start`. Players join with `/boss join`; the event accepts up to ten players. When The Forgotten dies, the rewards remain for one minute, then every fighter is teleported to the active Skywars map.

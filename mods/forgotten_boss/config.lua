@@ -1,19 +1,16 @@
 local boss = forgotten_boss
 
 boss.settings = {
-    max_hp = 600,
-    open_delay = 60,
-    reward_time = 35,
+    max_hp = 850,
+    max_players = 10,
+    reward_time = 60,
     idle_regen_delay = 12,
     idle_regen_per_second = 1,
 }
 
 local position_keys = {
-    "pos1",
-    "pos2",
-    "entry",
-    "exit",
-    "spawn",
+    "boss_spawn",
+    "player_spawn",
 }
 
 local function is_position_key(key)
@@ -74,36 +71,8 @@ function boss.get_position(key)
     return pos and vector.new(pos) or nil
 end
 
-function boss.has_zone()
-    return boss.config.pos1 and boss.config.pos2
-end
-
 function boss.is_ready()
-    return boss.has_zone()
-        and boss.config.entry
-        and boss.config.exit
-        and boss.config.spawn
-        and boss.in_zone(boss.config.entry)
-        and boss.in_zone(boss.config.spawn)
-end
-
-function boss.in_zone(pos)
-    if not boss.has_zone() or not pos then
-        return false
-    end
-
-    local first = boss.config.pos1
-    local second = boss.config.pos2
-    local min_x = math.min(first.x, second.x)
-    local max_x = math.max(first.x, second.x)
-    local min_y = math.min(first.y, second.y)
-    local max_y = math.max(first.y, second.y)
-    local min_z = math.min(first.z, second.z)
-    local max_z = math.max(first.z, second.z)
-
-    return pos.x >= min_x and pos.x <= max_x
-        and pos.y >= min_y and pos.y <= max_y
-        and pos.z >= min_z and pos.z <= max_z
+    return boss.config.boss_spawn and boss.config.player_spawn
 end
 
 function boss.position_text(pos)

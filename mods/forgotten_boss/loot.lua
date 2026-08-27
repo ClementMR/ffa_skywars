@@ -1,29 +1,5 @@
 local boss = forgotten_boss
 
-core.register_craftitem("forgotten_boss:golden_ticket", {
-    description = "Golden Ticket\nUse during a Forgotten event to enter the arena",
-    inventory_image = "default_paper.png^[colorize:#EAB308:180^default_mese_crystal_fragment.png^[resize:16x16",
-    stack_max = 99,
-    on_use = function(itemstack, user)
-        local entered, message = boss.enter_player(user, false)
-        if entered then
-            itemstack:take_item()
-        elseif user and user:is_player() then
-            core.chat_send_player(user:get_player_name(), core.colorize("#C4B5FD", "[Forgotten] ") .. message)
-        end
-        return itemstack
-    end,
-})
-
-core.register_craft({
-    output = "forgotten_boss:golden_ticket",
-    recipe = {
-        {"default:gold_ingot", "default:gold_ingot", "default:gold_ingot"},
-        {"default:gold_ingot", "default:paper", "default:gold_ingot"},
-        {"default:gold_ingot", "default:gold_ingot", "default:gold_ingot"},
-    },
-})
-
 core.register_node("forgotten_boss:rift_block", {
     description = "Rift Block",
     tiles = {"default_obsidian.png^[colorize:#6D28D9:170"},
@@ -79,7 +55,6 @@ local rewards = {
     {name = "ctf_ranged:rifle_loaded", min = 1, max = 1, weight = 2},
     {name = "default:mese_crystal", min = 2, max = 5, weight = 4},
     {name = "default:diamond", min = 1, max = 3, weight = 3},
-    {name = "forgotten_boss:golden_ticket", min = 1, max = 2, weight = 2},
 }
 
 local function reward_pool()

@@ -93,7 +93,12 @@ core.register_on_player_hpchange(function(player, hp_change, reason)
         return hp_change
     end
 
-    if is_immune(name) and(reason.type == "punch" or reason.type == "fall" or reason.type == "node_damage") then
+    if is_immune(name) and 
+        (reason.type == "punch" or 
+        reason.type == "fall" or 
+        reason.type == "node_damage" or 
+        reason.type == "set_hp") 
+    then
         return 0
     end
 

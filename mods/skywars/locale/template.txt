@@ -17,4 +17,4 @@ You are now unvanished.=
 You are now vanished.=
 The player @1 does not exist or is not online.=
 Show player informations=
-@1's informations@n
+@1's informations @n=

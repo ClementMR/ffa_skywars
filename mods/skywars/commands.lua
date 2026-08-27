@@ -39,7 +39,7 @@ core.register_chatcommand("info", {
 				table.insert(output, key .. " = " .. value)
 			end
 
-			return true, S("@1's informations@n", core.colorize("cyan", param)) .. table.concat(output, "\n")
+			return true, S("@1's informations @n", core.colorize("cyan", param)) .. table.concat(output, "\n")
 		end
 
 		return false, S("The player @1 does not exist or is not online.", param)

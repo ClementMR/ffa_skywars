@@ -180,8 +180,8 @@ local function entity_physics(pos, radius, drops, in_water)
 
 		local damage = (4 / dist) * radius
 		if obj:is_player() then
-			local obj_vel = obj:get_player_velocity()
-			obj:add_player_velocity(calc_velocity(pos, obj_pos,
+			local obj_vel = obj:get_velocity()
+			obj:add_velocity(calc_velocity(pos, obj_pos,
 					obj_vel, radius * player_velocity_mul))
 
 			if not in_water or (in_water and tnt_damage_entities) then

@@ -1,11 +1,9 @@
 local mod_name = core.get_current_modname()
-local mod_path = core.get_modpath(mod_name)
 
 local http_api = core.request_http_api()
 
 if http_api == nil then
     core.log("error", "[anti-vpn] core.request_http_api() failed. Add " .. mod_name .. " to secure.http_mods.")
-    return
 end
 
 local API_KEY = core.settings:get("anti_vpn_api_key") or ""
@@ -56,6 +54,23 @@ local function format_security_status(security)
 
 end
 
+local function get_threat_type(data)
+    local security = data and data.security
+    if type(security) ~= "table" then
+        return nil
+    end
+
+    local threats = {}
+    if security.vpn then table.insert(threats, "VPN") end
+    if security.proxy then table.insert(threats, "Proxy") end
+    if security.tor then table.insert(threats, "Tor") end
+    if security.relay then table.insert(threats, "Relay") end
+
+    if #threats > 0 then
+        return table.concat(threats, "/")
+    end
+end
+
 local function format_vpn_result(data)
     local result = {}
 
@@ -101,6 +116,43 @@ local function format_vpn_result(data)
 end
 
 local storage = core.get_mod_storage()
+local verification_cache = {}
+local pending_checks = {}
+local pending_count = 0
+local request_times = {}
+
+local function positive_setting(name, default, minimum)
+    return math.max(minimum, math.floor(tonumber(core.settings:get(name)) or default))
+end
+
+local cache_ttl = positive_setting("anti_vpn_cache_ttl", 900, 60)
+local failure_cache_ttl = positive_setting("anti_vpn_failure_cache_ttl", 30, 1)
+local max_pending = positive_setting("anti_vpn_max_pending", 8, 1)
+local max_requests_per_minute = positive_setting("anti_vpn_max_requests_per_minute", 20, 1)
+
+local function get_time()
+    return core.get_gametime()
+end
+
+local function get_cached_verification(ip)
+    local cached = verification_cache[ip]
+    if cached and cached.expires_at > get_time() then
+        return cached
+    end
+    verification_cache[ip] = nil
+end
+
+local function allow_new_request()
+    local now = get_time()
+    while request_times[1] and request_times[1] <= now - 60 do
+        table.remove(request_times, 1)
+    end
+    if #request_times >= max_requests_per_minute then
+        return false
+    end
+    table.insert(request_times, now)
+    return true
+end
 
 local function is_threat_ip(ip)
     local threat_data = storage:get_string("threat_" .. ip)
@@ -115,16 +167,16 @@ end
 local function add_threat_ip(ip, threat_type)
     storage:set_string("threat_" .. ip, threat_type)
 
-    core.log("action", "[VPN] Added " .. ip .. " to threat list as: " .. threat_type)
+    core.log("action", "[VPN] Added a threat to the block list as: " .. threat_type)
 end
 
 local function remove_threat_ip(ip)
     storage:set_string("threat_" .. ip, "")
 
-    core.log("action", "[VPN] Removed " .. ip .. " from threat list")
+    core.log("action", "[VPN] Removed a threat from the block list")
 end
 
-local function check_vpn_api(ip, callback)
+local function perform_vpn_api_check(ip, callback)
     if not http_api then
         callback(false, "HTTP API not available")
         return
@@ -137,7 +189,8 @@ local function check_vpn_api(ip, callback)
 
     local url = API_URL .. ip .. "?key=" .. API_KEY
 
-    core.log("action", "[anti-vpn] Making request to: " .. url)
+    -- Never log the request URL: it contains the API key.
+    core.log("action", "[anti-vpn] Sending a verification request")
 
     http_api.fetch({
         url = url,
@@ -145,17 +198,6 @@ local function check_vpn_api(ip, callback)
         timeout = 15,
         user_agent = "core VPN Checker"
     }, function(result)
-        core.log("action", "[anti-vpn] Response received")
-        core.log("action", "[anti-vpn] Success: " .. tostring(result.succeeded))
-        core.log("action", "[anti-vpn] Status code: " .. tostring(result.code or "none"))
-
-        if result.data then
-            core.log("action", "[anti-vpn] Response data length: " .. string.len(result.data))
-            core.log("action", "[anti-vpn] Response data: " .. string.sub(result.data, 1, 500))
-        else
-            core.log("action", "[anti-vpn] No response data")
-        end
-
         if not result.succeeded or result.code ~= 200 then
             local error_msg = "API request failed"
 
@@ -166,23 +208,18 @@ local function check_vpn_api(ip, callback)
                 error_msg = error_msg .. " (Code: " .. tostring(result.code) .. ")"
             end
 
-            if result.code == 429 or result.code == 403 or not result.succeeded then
-                core.log("warning", "[anti-vpn] API failed (" .. error_msg .. ")")
-                return
-            end
-
             callback(false, error_msg)
             return
         end
 
         if not result.data or result.data == "" then
-            core.log("warning", "[anti-vpn] Empty response...")
+            callback(false, "Empty API response")
             return
         end
 
         local data = core.parse_json(result.data)
         if not data then
-            core.log("warning", "[anti-vpn] Invalid JSON...")
+            callback(false, "Invalid API response")
             return
         end
 
@@ -193,11 +230,11 @@ local function check_vpn_api(ip, callback)
 
         if data.message then
             if data.message:match("private IP address") then
-                core.log("action", "[anti-vpn] Private IP detected, considering as clean: " .. ip)
-                callback(false, "Private IP address (considered safe)")
+                callback(true, {ip = ip, security = {}})
                 return
             elseif data.message:match("quota") or data.message:match("limit") or data.message:match("exceeded") then
-                core.log("warning", "[anti-vpn] Quota/limit error with the key, " .. tostring(data.message))
+                core.log("warning", "[anti-vpn] The verification provider reported a quota error")
+                callback(false, "Verification provider quota exceeded")
                 return
             else
                 callback(false, "API Error: " .. tostring(data.message))
@@ -214,13 +251,70 @@ local function check_vpn_api(ip, callback)
             return
         end
 
-        if not data.security and not data.location and not data.network then
-            core.log("warning", "[anti-vpn] API response missing expected fields")
+        if type(data.security) ~= "table" then
+            callback(false, "API response missing security data")
             return
         end
         
         callback(true, data)
     end)
+end
+
+local function finish_check(ip, success, result)
+    local callbacks = pending_checks[ip]
+    if not callbacks then
+        return
+    end
+
+    pending_checks[ip] = nil
+    pending_count = math.max(0, pending_count - 1)
+    verification_cache[ip] = {
+        success = success,
+        result = result,
+        expires_at = get_time() + (success and cache_ttl or failure_cache_ttl),
+    }
+
+    for _, callback in ipairs(callbacks) do
+        local ok, err = pcall(callback, success, result)
+        if not ok then
+            core.log("error", "[anti-vpn] Verification callback failed: " .. tostring(err))
+        end
+    end
+end
+
+-- Coalesce same-IP requests and bound both concurrent and per-minute work.
+local function check_vpn_api(ip, callback)
+    if not http_api then
+        return false, "HTTP API is not available."
+    end
+    if API_KEY == "" then
+        return false, "API key is not configured."
+    end
+
+    local cached = get_cached_verification(ip)
+    if cached then
+        callback(cached.success, cached.result)
+        return true, "cached"
+    end
+
+    if pending_checks[ip] then
+        table.insert(pending_checks[ip], callback)
+        return true, "pending"
+    end
+
+    if pending_count >= max_pending then
+        return false, "Verification service is busy. Please retry shortly."
+    end
+    if not allow_new_request() then
+        return false, "Verification rate limit reached. Please retry shortly."
+    end
+
+    pending_checks[ip] = {callback}
+    pending_count = pending_count + 1
+    perform_vpn_api_check(ip, function(success, result)
+        finish_check(ip, success, result)
+    end)
+    return true, "started"
 end
 
 core.register_chatcommand("vpn", {
@@ -246,11 +340,11 @@ core.register_chatcommand("vpn", {
 
         core.chat_send_player(name, "Checking IP " .. ip .. " for player " .. target_player .. "...")
 
-        check_vpn_api(ip, function(success, result)
+        local started, message = check_vpn_api(ip, function(success, result)
             if not success then
 
                 core.chat_send_player(name, "Error: " .. result)
-                core.log("error", "[VPN] Check failed: " .. result)
+                core.log("warning", "[VPN] A manual verification failed")
 
                 return
             end
@@ -266,12 +360,15 @@ core.register_chatcommand("vpn", {
             if result.security then
                 local is_threat = result.security.vpn or result.security.proxy or result.security.tor or result.security.relay
                 if is_threat then
-                    core.log("warning", "[VPN] Player " .. target_player .. " (" .. ip .. ") detected as threat")
+                    core.log("warning", "[VPN] Manual verification detected a threat")
                 else
-                    core.log("action", "[VPN] Player " .. target_player .. " (" .. ip .. ") is clean")
+                    core.log("action", "[VPN] Manual verification completed without a threat")
                 end
             end
         end)
+        if not started then
+            return false, message
+        end
         return true, "VPN check initiated..."
     end
 })
@@ -356,40 +453,41 @@ core.register_chatcommand("vpnclear", {
 core.register_on_prejoinplayer(function(name, ip)
     local cleaned_ip = clean_ip(ip)
     if not cleaned_ip then
-        core.log("action", "[VPN] Player " .. name .. " connecting from private IP: " .. ip)
+        core.log("action", "[VPN] Allowing a local/private connection")
         return
     end
     local is_threat, threat_type = is_threat_ip(cleaned_ip)
     if is_threat then
-        core.log("warning", "[VPN] Blocked connection from " .. name .. " (" .. cleaned_ip .. ") - known threat: " .. threat_type)
+        core.log("warning", "[VPN] Blocked a known " .. threat_type .. " connection")
         return "Connection blocked: " .. threat_type .. " detected. VPNs and proxies are not allowed on this server."
     end
-    core.log("action", "[VPN] Player " .. name .. " connecting with clean/unknown IP: " .. cleaned_ip .. " - allowing connection, will verify in background")
-    core.after(5, function()
-        check_vpn_api(cleaned_ip, function(success, result)
-            if success and result and result.security then
-                local is_threat = result.security.vpn or result.security.proxy or result.security.tor or result.security.relay
+    if not http_api or API_KEY == "" then
+        return "Connection verification is unavailable. Please contact a server administrator."
+    end
 
-                if is_threat then
-                    local threat_types = {}
-                    if result.security.vpn then table.insert(threat_types, "VPN") end
-                    if result.security.proxy then table.insert(threat_types, "Proxy") end
-                    if result.security.tor then table.insert(threat_types, "Tor") end
-                    if result.security.relay then table.insert(threat_types, "Relay") end
+    local cached = get_cached_verification(cleaned_ip)
+    if cached then
+        if not cached.success then
+            return "Connection verification is temporarily unavailable. Please retry shortly."
+        end
+        local cached_threat = get_threat_type(cached.result)
+        if cached_threat then
+            add_threat_ip(cleaned_ip, cached_threat)
+            return "Connection blocked: " .. cached_threat .. " detected. VPNs and proxies are not allowed on this server."
+        end
+        return
+    end
 
-                    local threat_string = table.concat(threat_types, "/")
-                    add_threat_ip(cleaned_ip, threat_string)
-                    core.log("warning", "[VPN] Background check: Player " .. name .. " (" .. cleaned_ip .. ") detected as threat: " .. threat_string)
-                    local player = core.get_player_by_name(name)
-                    if player then
-                        core.kick_player(name, "Connection blocked: " .. threat_string .. " detected. VPNs and proxies are not allowed on this server.")
-                    end
-                else
-                    core.log("action", "[VPN] Background check: Player " .. name .. " (" .. cleaned_ip .. ") verified as clean")
-                end
-            else
-                core.log("warning", "[VPN] Background check failed for " .. name .. " (" .. cleaned_ip .. "): " .. (result or "unknown error"))
+    local started, message = check_vpn_api(cleaned_ip, function(success, result)
+        if success then
+            local detected_threat = get_threat_type(result)
+            if detected_threat then
+                add_threat_ip(cleaned_ip, detected_threat)
             end
-        end)
+        end
     end)
+    if not started then
+        return message
+    end
+    return "Connection verification started. Please reconnect in a moment."
 end)

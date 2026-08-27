@@ -89,6 +89,43 @@ for _, kick_cmd in pairs({"kickme", "disconnect"}) do
 	})
 end
 
+core.register_chatcommand("notice", {
+	params = "<name> <message>",
+	description = "Send a direct message to a player (Admin tunnel)",
+	privs = {ffa_manager=true},
+	func = function(name, param)
+		local sendto, message = param:match("^(%S+)%s(.+)$")
+		if not sendto then
+			return false, S("Invalid usage, see /help notice.")
+		end
+
+		if not core.get_player_by_name(sendto) then
+			return false, ("The player %s is not online."):format(sendto)
+		end
+
+		core.chat_send_player(sendto, core.colorize("#FF8904", "[ NOTICE ]") .. " " .. message)
+
+		core.log("action", "[ PRIVATE NOTICE ] to " .. sendto .. " : " .. message)
+
+		return true, ("Message sent to %s."):format(sendto)
+	end,
+})
+
+core.register_chatcommand("notice_all", {
+	params = "<message>",
+	description = "Send a message to all players (Admin tunnel)",
+	privs = {ffa_manager=true},
+	func = function(name, param)
+		if not param or param == "" then
+			return false, "Invalid usage, see /help notice_all"
+		end
+
+		core.chat_send_all(core.colorize("#FF8904", "[ PUBLIC NOTICE ]") .. " " .. param)
+
+		core.log("action", ("[ PUBLIC NOTICE ] " .. param))
+	end,
+})
+
 core.override_chatcommand("privs", {
 	privs = {ffa_manager=true},
 })

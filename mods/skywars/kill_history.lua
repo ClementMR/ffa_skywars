@@ -1,18 +1,21 @@
 -- Shared, short-lived kill feed shown to every connected player.
 local MAX_ENTRIES = 3
 local ENTRY_LIFETIME = 60
-local HUD_KEY = "skywars:kill_history"
+local HUD_KEY = "skywars:kill_history:"
 
 local entries = {}
+local refresh_token = 0
 
-local function item_label(item_name)
+local function item_texture(item_name)
 	local definition = core.registered_items[item_name or ""]
-	local description = definition and definition.description or ""
-	description = description:match("^[^\n]+") or ""
-	if description == "" then
-		description = item_name ~= "" and item_name or "Unknown"
+	local texture = definition and definition.inventory_image or ""
+	if texture == "" and definition then
+		texture = definition.wield_image or ""
 	end
-	return description
+	if texture == "" then
+		texture = "unknown_item.png"
+	end
+	return texture .. "^[resize:30x30"
 end
 
 local function prune_entries()
@@ -24,33 +27,62 @@ local function prune_entries()
 	end
 end
 
-local function feed_text()
-	local lines = {}
-	for _, entry in ipairs(entries) do
-		local killer = core.colorize("#6EE7B7", entry.killer)
-		local item = core.colorize("#FCD34D", "[" .. item_label(entry.item) .. "]")
-		local victim = core.colorize("#FCA5A5", entry.victim)
-		table.insert(lines, killer .. " " .. item .. " " .. victim)
+local function entry_key(index, part)
+	return HUD_KEY .. index .. ":" .. part
+end
+
+local function clear_feed(player)
+	hud_api.remove(player, "skywars:kill_history")
+	for index = 1, MAX_ENTRIES do
+		hud_api.remove(player, entry_key(index, "killer"))
+		hud_api.remove(player, entry_key(index, "item"))
+		hud_api.remove(player, entry_key(index, "victim"))
 	end
-	return table.concat(lines, "\n")
 end
 
 local function refresh_player(player)
+	clear_feed(player)
 	if #entries == 0 then
-		hud_api.remove(player, HUD_KEY)
 		return
 	end
 
-	hud_api.show(player, HUD_KEY, {
-		type = "text",
-		text = feed_text(),
-		number = 0xFFFFFF,
-		position = {x = 1, y = 0},
-		alignment = {x = -1, y = 1},
-		offset = {x = -18, y = 22},
-		style = 1,
-		z_index = 30,
-	}, {background = true})
+	for index, entry in ipairs(entries) do
+		local offset_y = -176 - (index - 1) * 52
+		local killer_width = math.max(52, #entry.killer * 8)
+		local item_x = 24 + killer_width + 36
+
+		hud_api.show(player, entry_key(index, "killer"), {
+			type = "text",
+			text = core.colorize("#6EE7B7", entry.killer .. "  →"),
+			number = 0xFFFFFF,
+			position = {x = 0, y = 1},
+			alignment = {x = 1, y = -1},
+			offset = {x = 24, y = offset_y},
+			style = 1,
+			z_index = 30,
+		})
+
+		hud_api.show(player, entry_key(index, "item"), {
+			type = "image",
+			text = item_texture(entry.item),
+			position = {x = 0, y = 1},
+			alignment = {x = 1, y = -1},
+			offset = {x = item_x, y = offset_y - 8},
+			scale = {x = 1, y = 1},
+			z_index = 30,
+		})
+
+		hud_api.show(player, entry_key(index, "victim"), {
+			type = "text",
+			text = core.colorize("#FCA5A5", entry.victim),
+			number = 0xFFFFFF,
+			position = {x = 0, y = 1},
+			alignment = {x = 1, y = -1},
+			offset = {x = item_x + 42, y = offset_y},
+			style = 1,
+			z_index = 30,
+		})
+	end
 end
 
 local function refresh_all()
@@ -65,12 +97,20 @@ local function schedule_refresh()
 		return
 	end
 
+	refresh_token = refresh_token + 1
+	local token = refresh_token
 	local now = core.get_gametime()
 	local next_expiry = entries[#entries].expires_at
 	for _, entry in ipairs(entries) do
 		next_expiry = math.min(next_expiry, entry.expires_at)
 	end
-	core.after(math.max(0.1, next_expiry - now), refresh_all)
+	core.after(math.max(0.1, next_expiry - now), function()
+		if token ~= refresh_token then
+			return
+		end
+		refresh_all()
+		schedule_refresh()
+	end)
 end
 
 function skywars.record_kill(killer_name, item_name, victim_name)

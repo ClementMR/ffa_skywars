@@ -81,7 +81,7 @@ end
 
 core.register_chatcommand("vanish", {
 	description = "",
-	params = "<player>",
+	params = "<playerName>",
 	privs = {ffa_manager = true},
 	func = function(name, param)
 		if param ~= "" then
@@ -103,7 +103,7 @@ core.register_chatcommand("vanish", {
 core.register_chatcommand("unvanish", {
 	description = "",
 	privs = {ffa_manager = true},
-	params = "<player>",
+	params = "<playerName>",
 	func = function(name, param)
 		if param ~= "" then
 			local target_player = core.get_player_by_name(param)

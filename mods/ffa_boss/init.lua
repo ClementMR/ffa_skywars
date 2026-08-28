@@ -3,6 +3,7 @@ ffa_boss = {
     state = {
         members = {},
         active = false,
+        starting = false,
         loot_phase = false,
         boss_object = nil,
     }

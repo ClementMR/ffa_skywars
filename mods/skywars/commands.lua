@@ -90,8 +90,8 @@ for _, kick_cmd in pairs({"kickme", "disconnect"}) do
 end
 
 core.register_chatcommand("notice", {
-	params = "<name> <message>",
-	description = "Send a direct message to a player (Admin tunnel)",
+	params = "<playerName> <message>",
+	description = "Send a direct message to a player",
 	privs = {ffa_manager=true},
 	func = function(name, param)
 		local sendto, message = param:match("^(%S+)%s(.+)$")
@@ -113,7 +113,7 @@ core.register_chatcommand("notice", {
 
 core.register_chatcommand("notice_all", {
 	params = "<message>",
-	description = "Send a message to all players (Admin tunnel)",
+	description = "Send a message to all players",
 	privs = {ffa_manager=true},
 	func = function(name, param)
 		if not param or param == "" then

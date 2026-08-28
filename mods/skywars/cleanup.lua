@@ -3,7 +3,7 @@ local S = core.get_translator(core.get_current_modname())
 local cleanup_interval = math.max(60,
 	tonumber(core.settings:get("skywars_cleanup_interval")) or 2700)
 local transition_delay = math.max(0,
-	tonumber(core.settings:get("skywars_map_rotation_delay")) or 15)
+	tonumber(core.settings:get("skywars_map_rotation_delay")) or 30)
 local max_cleanup_volume = math.max(1,
 	tonumber(core.settings:get("skywars_max_cleanup_volume")) or 20000000)
 local air = core.get_content_id("air")
@@ -15,8 +15,6 @@ end
 
 skywars.cleanup_timer = cleanup_interval
 skywars.cleanup_in_progress = false
-skywars.rotation_in_progress = false
-local rotation_token = 0
 
 local function integer_bounds(map_or_id)
 	local bounds = skywars.map_bounds(map_or_id)
@@ -180,10 +178,9 @@ local function cleanup_hud(player, text, duration)
 	}, {duration = duration, background = false})
 end
 
-local function announce_warning(seconds, next_map_id)
+local function announce_warning(text)
 	for _, player in ipairs(core.get_connected_players()) do
-		cleanup_hud(player, S("Map cleanup in @1s", seconds),
-			math.max(1, math.min(seconds, 8)))
+		cleanup_hud(player, text, 1)
 	end
 end
 
@@ -208,18 +205,6 @@ local function snapshot_map(map)
 	}
 end
 
-local function schedule_final_warnings(delay, next_id, token)
-	for _, seconds in ipairs({30, 10, 5}) do
-		if seconds < delay then
-			core.after(delay - seconds, function()
-				if skywars.rotation_in_progress and rotation_token == token then
-					announce_warning(seconds, next_id)
-				end
-			end)
-		end
-	end
-end
-
 local function transition_players(map_id)
 	for _, player in ipairs(core.get_connected_players()) do
 		local name = player:get_player_name()
@@ -231,109 +216,102 @@ local function transition_players(map_id)
 	end
 end
 
--- Announces, moves players to a different ready map where possible, and then
--- clears the previous cuboid. With one usable map, it cleans and reuses it.
-function skywars.start_map_rotation(delay, automatic)
-	if automatic and skywars.is_rotation_paused and skywars.is_rotation_paused() then
-		return false, "Automatic map rotation is paused."
+function skywars.start_map_rotation()
+	if skywars.cleanup_in_progress then
+		return false, "A map rotation or cleanup is already running."
 	end
-	if skywars.rotation_in_progress or skywars.cleanup_in_progress then
+
+	if skywars.is_rotation_paused and skywars.is_rotation_paused() then
+		return false, "[Map] Automatic map rotation is paused."
+	end
+
+	local current_map = skywars.get_current_map()
+	if not skywars.is_map_ready(current_map) then
+		return false, "[Map] The active map is incomplete. Define its two positions and a spawn."
+	end
+
+	local current_snapshot = snapshot_map(current_map)
+	if not current_snapshot then
+		return false, "[Map] The active map has no complete cuboid."
+	end
+
+	local next_id = skywars.pick_next_map()
+	if not next_id then
+		skywars.cleanup_timer = cleanup_interval
+		return false, "[Map] Rotation cancelled: no ready map."
+	end
+
+	local activated, error = skywars.set_current_map(next_id)
+	if not activated then
+		skywars.cleanup_timer = cleanup_interval
+		return false, "[Map] Rotation failed: " .. tostring(error)
+	end
+
+	transition_players(next_id)
+	core.chat_send_all(core.colorize("#6EE7B7", S("[Map] Now playing: @1.", next_id)))
+
+	for _, player in ipairs(core.get_connected_players()) do
+		cleanup_hud(player, S("Now playing: @1", next_id), 5)
+	end
+
+	local started = skywars.cleanup_map(current_snapshot, function()
+		skywars.cleanup_timer = cleanup_interval
+		core.chat_send_all(core.colorize("#93C5FD", S("[Map] Cleanup complete.")))
+	end)
+	if not started then
+		skywars.cleanup_timer = cleanup_interval
+	end
+
+	return true
+end
+
+function skywars.start_map_cleanup()
+	if skywars.cleanup_in_progress then
 		return false, "A map rotation or cleanup is already running."
 	end
 
 	local current_map = skywars.get_current_map()
 	if not skywars.is_map_ready(current_map) then
-		return false, "The active map is incomplete. Define its two positions and a spawn."
+		return false, "[Map] The active map is incomplete. Define its two positions and a spawn."
 	end
+
 	local current_snapshot = snapshot_map(current_map)
 	if not current_snapshot then
-		return false, "The active map has no complete cuboid."
+		return false, "[Map] The active map has no complete cuboid."
 	end
 
-	local next_id = skywars.pick_next_map()
-	if not next_id then
-		return false, "No ready map is available."
-	end
+	transition_players()
 
-	skywars.rotation_in_progress = true
-	rotation_token = rotation_token + 1
-	local token = rotation_token
-	delay = delay == nil and transition_delay or math.max(0, delay)
-	announce_warning(delay, next_id)
-	schedule_final_warnings(delay, next_id, token)
-
-	core.after(delay, function()
-		if automatic and skywars.is_rotation_paused and skywars.is_rotation_paused() then
-			skywars.rotation_in_progress = false
-			return
-		end
-		-- An admin may have deleted or invalidated the selected map during the
-		-- warning. Pick a safe candidate again at the last possible moment.
-		if not skywars.is_map_ready(next_id) then
-			next_id = skywars.pick_next_map()
-		end
-		if not next_id or not skywars.is_map_ready(next_id) then
-			skywars.rotation_in_progress = false
-			skywars.cleanup_timer = cleanup_interval
-			core.chat_send_all(core.colorize("#FF5252", S("[Map] Rotation cancelled: no ready map.")))
-			return
-		end
-
-		local activated, error = skywars.set_current_map(next_id)
-		if not activated then
-			skywars.rotation_in_progress = false
-			skywars.cleanup_timer = cleanup_interval
-			core.log("warning", "[skywars] map rotation failed: " .. tostring(error))
-			return
-		end
-
-		transition_players(next_id)
-		core.chat_send_all(core.colorize("#6EE7B7", S("[Map] Now playing: @1.", next_id)))
-		for _, player in ipairs(core.get_connected_players()) do
-			cleanup_hud(player, S("Now playing: @1", next_id), 5)
-		end
-
-		local started = skywars.cleanup_map(current_snapshot, function()
-			skywars.rotation_in_progress = false
-			skywars.cleanup_timer = cleanup_interval
-			core.chat_send_all(core.colorize("#93C5FD", S("[Map] Cleanup complete.")))
-		end)
-		if not started then
-			skywars.rotation_in_progress = false
-			skywars.cleanup_timer = cleanup_interval
-		end
+	local started = skywars.cleanup_map(current_snapshot, function()
+		skywars.cleanup_timer = cleanup_interval
+		core.chat_send_all(core.colorize("#93C5FD", S("[Map] Cleanup complete.")))
 	end)
+	if not started then
+		skywars.cleanup_timer = cleanup_interval
+	end
+
 	return true
 end
 
 core.register_chatcommand("cleanup", {
-	description = "Start the cleanup.",
+	description = S("Start the cleanup"),
+	params = "[<time>]",
 	privs = {ffa_manager = true},
-	func = function(_, param)
-		local current_map = skywars.get_current_map()
-		if not skywars.is_map_ready(current_map) then
-			return false, "The active map is incomplete. Define its two positions and a spawn."
-		end
-		local current_snapshot = snapshot_map(current_map)
-		if not current_snapshot then
-			return false, "The active map has no complete cuboid."
-		end
-
-		transition_players()
-
-		skywars.cleanup_map(current_snapshot)
-		core.chat_send_all(core.colorize("#93C5FD", S("[Map] Cleanup complete. Requested by server.")))
+	func = function(name, param)
+		local seconds = param and tonumber(param) or transition_delay
+		core.chat_send_all(core.colorize("#93C5FD", S("[Map] Cleanup requested by server in @1s", seconds)))
+		core.after(seconds, function()
+			skywars.start_map_cleanup()
+		end)
 	end,
 })
 
 core.register_chatcommand("maprotate", {
-	description = "Start a random map rotation without repeating the current map.",
-	params = "[now]",
+	description = S("Start a random map rotation"),
 	privs = {ffa_manager = true},
-	func = function(_, param)
-		local delay = param:trim() == "now" and 0 or transition_delay
-		local ok, message = skywars.start_map_rotation(delay)
-		return ok, message or "Map rotation scheduled."
+	func = function(name, param)
+		local ok, message = skywars.start_map_rotation()
+		return ok, message or S("Map rotation scheduled.")
 	end,
 })
 
@@ -349,37 +327,31 @@ for _, command in ipairs({"clean_timer", "ct"}) do
 	})
 end
 
-local warning_thresholds = {
-	[60] = true,
-	[30] = true,
-	[10] = true,
-	[5] = true,
-}
-
 local function update_cleanup_timer()
-	if skywars.is_rotation_paused and skywars.is_rotation_paused() then
-		core.after(1, update_cleanup_timer)
-		return
+	if skywars.cleanup_timer <= transition_delay and skywars.cleanup_timer >= 0 then
+		announce_warning(S("Map cleanup in @1s", skywars.cleanup_timer))
 	end
 
-	if not skywars.rotation_in_progress and not skywars.cleanup_in_progress then
-		-- Start the transition at the beginning of its countdown.  Previously
-		-- the timer reached zero and then started another full warning delay,
-		-- so a "10 seconds" message could actually take 20 seconds.
-		if skywars.cleanup_timer <= transition_delay then
-			local delay = math.max(0, skywars.cleanup_timer)
-			local ok, error = skywars.start_map_rotation(delay, true)
+	if skywars.cleanup_timer == 0 then
+		if not skywars.is_rotation_paused() then
+			local ok, error = skywars.start_map_rotation()
+
 			if not ok then
 				core.log("warning", "[skywars] automatic rotation failed: " .. tostring(error))
 				skywars.cleanup_timer = cleanup_interval
 			end
-		elseif warning_thresholds[skywars.cleanup_timer] then
-			announce_warning(skywars.cleanup_timer, skywars.pick_next_map())
-		end
+		else
+			local ok, error = skywars.start_map_cleanup()
 
-		if not skywars.rotation_in_progress then
-			skywars.cleanup_timer = skywars.cleanup_timer - 1
+			if not ok then
+				core.log("warning", "[skywars] automatic cleanup failed: " .. tostring(error))
+				skywars.cleanup_timer = cleanup_interval
+			end
 		end
+	end
+
+	if not skywars.cleanup_in_progress then
+		skywars.cleanup_timer = skywars.cleanup_timer - 1
 	end
 
 	core.after(1, update_cleanup_timer)

@@ -4,9 +4,7 @@ core.register_craftitem("ffa_boss:golden_ticket", {
     stack_max = 1,
     on_use = function(itemstack, user, pointed_thing)
         if ffa_boss.start_event() then
-            ffa_boss.join_player(user)
             itemstack:take_item(1)
-
             return itemstack
         end
     end

@@ -12,6 +12,21 @@ local function valid_boss(object)
     return entity and entity.name == "ffa_boss:forgotten_player"
 end
 
+local function emerge_position(pos, done)
+    local radius = 24
+    local min = vector.offset(pos, -radius, -radius, -radius)
+    local max = vector.offset(pos, radius, radius, radius)
+    local completed = false
+
+    core.emerge_area(min, max, function(_, _, calls_remaining)
+        if completed or calls_remaining ~= 0 then
+            return
+        end
+        completed = true
+        done()
+    end)
+end
+
 function ffa_boss.get_boss()
     if valid_boss(ffa_boss.state.boss_object) then
         return ffa_boss.state.boss_object
@@ -213,22 +228,31 @@ mobs:register_mob("ffa_boss:forgotten_player", {
 })
 
 function ffa_boss.start_event()
-    if ffa_boss.state.active then
+    if ffa_boss.state.active or ffa_boss.state.starting then
         return false, "The Forgotten event is already running."
     end
     if not ffa_boss.is_ready() then
         return false, "The zone isn't completely defined."
     end
 
-    ffa_boss.state.members = {}
-    ffa_boss.state.loot_phase = false
-    local object = core.add_entity(ffa_boss.get_position("boss_spawn"), "ffa_boss:forgotten_player")
-    if not valid_boss(object) then
-        return false, "The Forgotten could not be spawned."
+    local boss_spawn = ffa_boss.get_position("boss_spawn")
+    ffa_boss.state.starting = true
+
+    local function spawn_boss()
+        ffa_boss.state.starting = false
+        ffa_boss.state.members = {}
+        ffa_boss.state.loot_phase = false
+        local object = core.add_entity(boss_spawn, "ffa_boss:forgotten_player")
+        if not valid_boss(object) then
+            broadcast("The Forgotten could not be spawned after the arena was loaded.")
+            return
+        end
+
+        ffa_boss.state.active = true
+        ffa_boss.state.boss_object = object
+        broadcast(("The Forgotten has appeared. Use %s to fight it."):format(core.colorize("cyan", "/boss join")))
     end
 
-    ffa_boss.state.active = true
-    ffa_boss.state.boss_object = object
-    broadcast(("The Forgotten has appeared. Use %s to fight it."):format(core.colorize("cyan", "/boss join")))
-    return true
+    emerge_position(boss_spawn, spawn_boss)
+    return true, "Preparing the boss arena."
 end

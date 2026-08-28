@@ -9,8 +9,8 @@ local function status()
 end
 
 core.register_chatcommand("boss", {
-    params = "boss_spawn | player_spawn | start | join | status",
-    description = "Manage The Forgotten boss event",
+    params = "start | stop | join | leave | status",
+    description = "",
     func = function(name, param)
         local player = core.get_player_by_name(name)
         if not player then
@@ -20,6 +20,9 @@ core.register_chatcommand("boss", {
         local action = (param:match("^%S+") or ""):lower()
         if action == "join" then
             return ffa_boss.join_player(player)
+        end
+        if action == "leave" then
+            return ffa_boss.leave_player(player)
         end
         if action == "status" then
             return true, status()
@@ -34,6 +37,15 @@ core.register_chatcommand("boss", {
         if action == "start" then
             return ffa_boss.start_event()
         end
-        return false, "/boss boss_spawn | player_spawn | start | join | status"
+        if action == "stop" then
+            ffa_boss.return_all()
+            ffa_boss.state.active = false
+            ffa_boss.state.starting = false
+            ffa_boss.state.loot_phase = false
+            ffa_boss.state.boss_object = nil
+            core.chat_send_all(core.colorize("#d66823", "[Boss] ") .. "The Forgotten event is over.")
+            return true
+        end
+        return false, "/boss start | stop | join | leave | status"
     end,
 })

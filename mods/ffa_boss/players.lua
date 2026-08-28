@@ -2,12 +2,21 @@ function ffa_boss.is_member(name)
     return ffa_boss.state.members[name] == true
 end
 
+local function is_in_combat(name)
+    return ffa_timers and ffa_timers.is_in_combat and ffa_timers.is_in_combat(name)
+end
+
 function ffa_boss.join_player(player)
     if not player or not player:is_player() then
         return false
     end
 
     local name = player:get_player_name()
+    if is_in_combat(name) then
+        core.chat_send_player(name, "You cannot join the boss fight while in combat.")
+        return false
+    end
+
     if not ffa_boss.state.active or ffa_boss.state.loot_phase or not ffa_boss.get_boss() then
         core.chat_send_player(name, "The Forgotten is not fighting right now.")
         return false
@@ -27,6 +36,27 @@ function ffa_boss.join_player(player)
     ffa_boss.state.members[name] = true
     player:set_pos(ffa_boss.get_position("player_spawn"))
     core.chat_send_player(name, "You joined the fight against The Forgotten.")
+    return true
+end
+
+function ffa_boss.leave_player(player)
+    if not player or not player:is_player() then
+        return false
+    end
+
+    local name = player:get_player_name()
+    if not ffa_boss.is_member(name) then
+        core.chat_send_player(name, "You are not in the boss fight.")
+        return false
+    end
+    if is_in_combat(name) then
+        core.chat_send_player(name, "You cannot leave the boss fight while in combat.")
+        return false
+    end
+
+    ffa_boss.state.members[name] = nil
+    skywars.teleport_player(player)
+    core.chat_send_player(name, "You left the boss fight.")
     return true
 end
 

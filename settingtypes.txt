@@ -78,7 +78,7 @@ anti_vpn_max_requests_per_minute (Maximum verification requests per minute) int 
 skywars_cleanup_interval (Map cleanup interval [seconds]) int 2700 60
 
 # Seconds between the rotation announcement and player teleportation.
-skywars_map_rotation_delay (Map rotation warning [seconds]) int 10 0
+skywars_map_rotation_delay (Map rotation warning [seconds]) int 30 0
 
 # Maximum number of nodes that one map cleanup may scan; protects the server
 # from accidentally configured world-sized cuboids.

@@ -171,6 +171,7 @@ end
 
 mobs:register_mob("ffa_boss:forgotten_player", {
     type = "monster",
+    lifetimer = 20000,
     hp_min = ffa_boss.settings.max_hp,
     hp_max = ffa_boss.settings.max_hp,
     armor = 30,
@@ -216,6 +217,8 @@ mobs:register_mob("ffa_boss:forgotten_player", {
         punch_end = 198,
     },
     after_activate = function(self)
+        self.lifetimer = 20000
+        self.object:set_properties({ static_save = true })
         self.last_hit = core.get_gametime()
         self.next_power = 10
         ffa_boss.state.boss_object = self.object

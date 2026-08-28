@@ -4,8 +4,7 @@ ffa_boss.settings = {
     reward_time = 30,
     idle_regen_delay = 30,
     idle_regen_per_second = 1,
-    arena_radius = 40,
-    arena_height = 40
+    boss_radius = 30
 }
 
 local position_keys = {
@@ -71,16 +70,13 @@ function ffa_boss.get_position(key)
     return pos and vector.new(pos) or nil
 end
 
-function ffa_boss.is_inside_arena(pos)
+function ffa_boss.is_in_zone(pos)
     local spawn = ffa_boss.get_position("boss_spawn")
     if not spawn or not pos then
         return false
     end
 
-    local x = pos.x - spawn.x
-    local z = pos.z - spawn.z
-    return x * x + z * z <= ffa_boss.settings.arena_radius ^ 2
-        and math.abs(pos.y - spawn.y) <= ffa_boss.settings.arena_height
+    return vector.distance(pos, spawn) <= ffa_boss.settings.boss_radius
 end
 
 function ffa_boss.is_ready()

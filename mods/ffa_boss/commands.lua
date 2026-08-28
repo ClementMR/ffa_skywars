@@ -1,8 +1,6 @@
 local function status()
     local state = ffa_boss.state.loot_phase and "loot"
-        or ffa_boss.state.starting and "preparing"
         or ffa_boss.get_boss() and "active"
-        or ffa_boss.has_boss_block() and "loading"
         or "idle"
     return ("Event: %s | Players: %d / %d")
         :format(

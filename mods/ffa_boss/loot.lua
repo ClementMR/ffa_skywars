@@ -1,10 +1,11 @@
 local rewards = {
-    {name = "tnt:tnt", min = 1, max = 8, weight = 7},
+    {name = "default:apple", min = 1, max = 5, weight = 10},
+    {name = "tnt:tnt", min = 1, max = 8, weight = 5},
     {name = "ctf_ranged:shotgun_loaded", min = 1, max = 1, weight = 5},
     {name = "skywars:golden_apple", min = 1, max = 3, weight = 4},
     {name = "ffa_loot:diamond_key", min = 1, max = 1, weight = 4},
-    {name = "skywars:sword_shadow", min = 1, max = 1, weight = 2},
-    {name = "skywars:totem_of_undying", min = 1, max = 1, weight = 1},
+    {name = "skywars:sword_shadow", min = 1, max = 1, weight = 1},
+    {name = "skywars:totem_of_undying", min = 1, max = 1, weight = 1}
 }
 
 local function reward_pool()

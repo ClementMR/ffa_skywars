@@ -4,26 +4,29 @@ end
 
 function ffa_boss.join_player(player)
     if not player or not player:is_player() then
-        return false, "Only online players can join the fight."
-    end
-
-    if not ffa_boss.state.active or ffa_boss.state.loot_phase or not ffa_boss.get_boss() then
-        return false, "The Forgotten is not fighting right now."
+        return false
     end
 
     local name = player:get_player_name()
+    if not ffa_boss.state.active or ffa_boss.state.loot_phase or not ffa_boss.get_boss() then
+        core.chat_send_player(name, "The Forgotten is not fighting right now.")
+        return false
+    end
+
     if ffa_boss.is_member(name) then
-        return false, "You are already in the boss fight."
+        core.chat_send_player(name, "You are already in the boss fight.")
+        return false
     end
 
     local max = ffa_boss.settings.max_players
     if ffa_boss.member_count() >= max then
-        return false, string.format("The boss fight already has %d players.", max)
+        core.chat_send_player(name, string.format("The boss fight already has %d players.", max))
+        return false
     end
 
     ffa_boss.state.members[name] = true
     player:set_pos(ffa_boss.get_position("player_spawn"))
-    core.chat_send_player(player:get_player_name(), "You joined the fight against The Forgotten.")
+    core.chat_send_player(name, "You joined the fight against The Forgotten.")
     return true
 end
 
@@ -36,7 +39,7 @@ function ffa_boss.return_all()
     for _, name in ipairs(names) do
         ffa_boss.state.members[name] = nil
         local player = core.get_player_by_name(name)
-        if player and skywars and skywars.teleport_player then
+        if player then
             skywars.teleport_player(player)
         end
     end

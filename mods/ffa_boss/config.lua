@@ -2,7 +2,7 @@ ffa_boss.settings = {
     max_hp = 1000,
     max_players = 10,
     reward_time = 30,
-    idle_regen_delay = 12,
+    idle_regen_delay = 20,
     idle_regen_per_second = 1,
 }
 

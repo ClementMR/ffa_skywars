@@ -107,11 +107,11 @@ local function custom_step(self, dtime)
     end
 
     self.power_timer = (self.power_timer or 0) + dtime
-    if self.power_timer < (self.next_power or 5) then
+    if self.power_timer < (self.next_power or 10) then
         return
     end
     self.power_timer = 0
-    self.next_power = math.random(10, 15)
+    self.next_power = math.random(5, 10)
 
     void_burst(self, target)
 end
@@ -202,7 +202,7 @@ mobs:register_mob("ffa_boss:forgotten_player", {
     },
     after_activate = function(self)
         self.last_hit = core.get_gametime()
-        self.next_power = 5
+        self.next_power = 10
         ffa_boss.state.boss_object = self.object
         ffa_boss.state.active = true
         update_nameplate(self)

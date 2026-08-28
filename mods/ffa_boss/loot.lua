@@ -26,7 +26,7 @@ function ffa_boss.drop_rewards(pos)
         return
     end
 
-    for _ = 1, math.random(15, 20) do
+    for _ = 1, math.random(16, 26) do
         local reward = pool[math.random(#pool)]
         local drop_pos = vector.add(pos, {
             x = math.random(-7, 7),

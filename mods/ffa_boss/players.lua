@@ -17,7 +17,7 @@ function ffa_boss.join_player(player)
         return false
     end
 
-    if not ffa_boss.state.active or ffa_boss.state.loot_phase or not ffa_boss.get_boss() then
+    if ffa_boss.state.loot_phase or not ffa_boss.get_boss() then
         core.chat_send_player(name, "The Forgotten is not fighting right now.")
         return false
     end
@@ -79,8 +79,8 @@ core.register_on_joinplayer(function(player)
     local members_count = ffa_boss.member_count()
     local max_players = ffa_boss.settings.max_players
 
-    if ffa_boss.state.active and not 
-        ffa_boss.state.loot_phase and 
+    if not ffa_boss.state.loot_phase and
+        ffa_boss.get_boss() and
         members_count ~= max_players
     then
         core.chat_send_player(player:get_player_name(), core.colorize("#d66823", "[Boss] ") .. 

@@ -13,12 +13,9 @@ local function valid_boss(object)
 end
 
 local function emerge_position(pos, done)
-    local radius = 24
-    local min = vector.offset(pos, -radius, -radius, -radius)
-    local max = vector.offset(pos, radius, radius, radius)
     local completed = false
 
-    core.emerge_area(min, max, function(_, _, calls_remaining)
+    core.emerge_area(pos, pos, function(_, _, calls_remaining)
         if completed or calls_remaining ~= 0 then
             return
         end
@@ -35,11 +32,79 @@ function ffa_boss.get_boss()
     return nil
 end
 
+function ffa_boss.has_boss_block()
+    return ffa_boss.state.boss_block ~= nil
+end
+
+function ffa_boss.is_running()
+    return ffa_boss.state.starting
+        or ffa_boss.state.loot_phase
+        or ffa_boss.get_boss() ~= nil
+        or ffa_boss.has_boss_block()
+end
+
+local function block_origin(pos)
+    local size = core.MAP_BLOCKSIZE
+    return {
+        x = math.floor(pos.x / size) * size,
+        y = math.floor(pos.y / size) * size,
+        z = math.floor(pos.z / size) * size,
+    }
+end
+
+local function same_block(a, b)
+    return a.x == b.x and a.y == b.y and a.z == b.z
+end
+
+function ffa_boss.keep_boss_loaded(pos)
+    if not pos then
+        return false
+    end
+
+    local block = block_origin(pos)
+    local previous = ffa_boss.state.boss_block
+    if previous and same_block(previous, block) then
+        return true
+    end
+
+    if not core.forceload_block(block, false, -1) then
+        return false
+    end
+    if previous then
+        core.forceload_free_block(previous)
+    end
+
+    ffa_boss.state.boss_block = block
+    ffa_boss.storage:set_string("boss_block", core.serialize(block))
+    return true
+end
+
+function ffa_boss.release_boss_block()
+    local block = ffa_boss.state.boss_block
+    if block then
+        core.forceload_free_block(block)
+    end
+    ffa_boss.state.boss_block = nil
+    ffa_boss.storage:set_string("boss_block", "")
+end
+
 local function update_nameplate(self)
     self.object:set_properties({
         nametag = ("THE FORGOTTEN\n%d / %d HP"):format(math.max(0, self.health), ffa_boss.settings.max_hp),
         nametag_color = "#C084FC",
     })
+end
+
+local function return_home(self)
+    local spawn = ffa_boss.get_position("boss_spawn")
+    local pos = self.object:get_pos()
+    if spawn then
+        if not pos or vector.distance(pos, spawn) > 1 then
+            self.object:set_pos(spawn)
+            self.object:set_velocity({x = 0, y = 0, z = 0})
+        end
+        ffa_boss.keep_boss_loaded(spawn)
+    end
 end
 
 local function open_positions(pos)
@@ -53,7 +118,9 @@ local function open_positions(pos)
             local above = core.get_node_or_nil(vector.offset(target, 0, 1, 0))
             local here_def = here and core.registered_nodes[here.name]
             local above_def = above and core.registered_nodes[above.name]
-            if here_def and above_def and here_def.buildable_to and above_def.buildable_to then
+            if here_def and above_def and here_def.buildable_to and above_def.buildable_to
+                and ffa_boss.is_inside_arena(target)
+            then
                 table.insert(positions, target)
             end
         end
@@ -99,6 +166,12 @@ local function void_burst(self, target)
 end
 
 local function custom_step(self, dtime)
+    local pos = self.object:get_pos()
+    if not ffa_boss.keep_boss_loaded(pos) or not ffa_boss.is_inside_arena(pos) then
+        return_home(self)
+        return false
+    end
+
     local now = core.get_gametime()
     self.name_timer = (self.name_timer or 0) + dtime
     if self.name_timer >= 0.5 then
@@ -136,6 +209,10 @@ local function custom_punch(self, hitter)
         return
     end
 
+    if not ffa_boss.is_member(hitter:get_player_name()) then
+        return false
+    end
+
     self.last_hit = core.get_gametime()
     self.last_hitter = hitter:get_player_name()
     if self.state == "attack" and math.random(1, 5) == 1 then
@@ -149,6 +226,7 @@ local function boss_death(self, killer)
     end
     ffa_boss.state.boss_object = nil
     ffa_boss.state.loot_phase = true
+    ffa_boss.release_boss_block()
     ffa_boss.drop_rewards(ffa_boss.get_position("boss_spawn") or self.object:get_pos())
     local winner = killer and killer:get_player_name() or self.last_hitter or "the arena"
     broadcast(("The Forgotten was defeated by %s."):format(winner))
@@ -163,7 +241,6 @@ local function boss_death(self, killer)
             return
         end
         ffa_boss.return_all()
-        ffa_boss.state.active = false
         ffa_boss.state.loot_phase = false
         broadcast("The Forgotten event is over.")
     end)
@@ -177,11 +254,14 @@ mobs:register_mob("ffa_boss:forgotten_player", {
     armor = 30,
     walk_velocity = 3.2,
     run_velocity = 4.2,
-    randomly_turn = true,
+    randomly_turn = false,
     jump_height = 1.4,
     view_range = 28,
     damage = 22,
     knock_back = false,
+    fall_damage = false,
+    node_damage = false,
+    water_damage = 0,
     lava_damage = 0,
     fire_damage = 0,
     suffocation = 0,
@@ -217,12 +297,15 @@ mobs:register_mob("ffa_boss:forgotten_player", {
         punch_end = 198,
     },
     after_activate = function(self)
+        if not ffa_boss.keep_boss_loaded(self.object:get_pos()) then
+            self.object:remove()
+            return
+        end
         self.lifetimer = 20000
         self.object:set_properties({ static_save = true })
         self.last_hit = core.get_gametime()
         self.next_power = 10
         ffa_boss.state.boss_object = self.object
-        ffa_boss.state.active = true
         update_nameplate(self)
     end,
     do_custom = custom_step,
@@ -231,7 +314,7 @@ mobs:register_mob("ffa_boss:forgotten_player", {
 })
 
 function ffa_boss.start_event()
-    if ffa_boss.state.active or ffa_boss.state.starting then
+    if ffa_boss.is_running() then
         return false, "The Forgotten event is already running."
     end
     if not ffa_boss.is_ready() then
@@ -239,23 +322,41 @@ function ffa_boss.start_event()
     end
 
     local boss_spawn = ffa_boss.get_position("boss_spawn")
+    if not ffa_boss.keep_boss_loaded(boss_spawn) then
+        return false, "The boss spawn could not be kept loaded."
+    end
     ffa_boss.state.starting = true
 
     local function spawn_boss()
+        if not ffa_boss.state.starting then
+            return
+        end
         ffa_boss.state.starting = false
         ffa_boss.state.members = {}
         ffa_boss.state.loot_phase = false
         local object = core.add_entity(boss_spawn, "ffa_boss:forgotten_player")
         if not valid_boss(object) then
+            ffa_boss.release_boss_block()
             broadcast("The Forgotten could not be spawned after the arena was loaded.")
             return
         end
 
-        ffa_boss.state.active = true
-        ffa_boss.state.boss_object = object
         broadcast(("The Forgotten has appeared. Use %s to fight it."):format(core.colorize("cyan", "/boss join")))
     end
 
     emerge_position(boss_spawn, spawn_boss)
     return true, "Preparing the boss arena."
+end
+
+function ffa_boss.stop_event()
+    local boss = ffa_boss.get_boss()
+    if boss then
+        boss:remove()
+    end
+
+    ffa_boss.return_all()
+    ffa_boss.state.starting = false
+    ffa_boss.state.loot_phase = false
+    ffa_boss.state.boss_object = nil
+    ffa_boss.release_boss_block()
 end

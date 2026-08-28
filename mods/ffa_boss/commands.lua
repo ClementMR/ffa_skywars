@@ -1,5 +1,9 @@
 local function status()
-    local state = ffa_boss.state.loot_phase and "loot" or ffa_boss.state.active and "active" or "idle"
+    local state = ffa_boss.state.loot_phase and "loot"
+        or ffa_boss.state.starting and "preparing"
+        or ffa_boss.get_boss() and "active"
+        or ffa_boss.has_boss_block() and "loading"
+        or "idle"
     return ("Event: %s | Players: %d / %d")
         :format(
             state,
@@ -31,6 +35,9 @@ core.register_chatcommand("boss", {
             return false, "You need the ffa_manager privilege."
         end
         if action == "boss_spawn" or action == "player_spawn" then
+            if ffa_boss.is_running() then
+                return false, "Stop the event before changing its positions."
+            end
             ffa_boss.set_position(action, player:get_pos())
             return true, ("%s set to %s."):format(action, ffa_boss.position_text(ffa_boss.get_position(action)))
         end
@@ -38,11 +45,7 @@ core.register_chatcommand("boss", {
             return ffa_boss.start_event()
         end
         if action == "stop" then
-            ffa_boss.return_all()
-            ffa_boss.state.active = false
-            ffa_boss.state.starting = false
-            ffa_boss.state.loot_phase = false
-            ffa_boss.state.boss_object = nil
+            ffa_boss.stop_event()
             core.chat_send_all(core.colorize("#d66823", "[Boss] ") .. "The Forgotten event is over.")
             return true
         end

@@ -4,8 +4,8 @@ ffa_boss.settings = {
     reward_time = 30,
     idle_regen_delay = 30,
     idle_regen_per_second = 1,
-    arena_radius = 20,
-    arena_height = 20
+    arena_radius = 40,
+    arena_height = 40
 }
 
 local position_keys = {

@@ -60,7 +60,7 @@ local mese_loot = {
 
     -- Mobility and keys
     {name = "wind_pearl:wind_pearl", chance = 0.25, min = 1, max = 2},
-    {name = "enderpearl:ender_pearl", chance = 0.10, min = 1, max = 2},
+    {name = "enderpearl:ender_pearl", chance = 0.12, min = 1, max = 2},
     {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
 
     {name = "ffa_boss:golden_ticket", chance = 0.001, max = 1},

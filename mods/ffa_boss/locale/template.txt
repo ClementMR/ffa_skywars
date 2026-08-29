@@ -1,0 +1,26 @@
+# textdomain: ffa_boss
+
+You cannot join the boss fight while in combat.=
+The Forgotten is not fighting right now.=
+You are already in the boss fight.=
+The boss fight already has @1 players.=
+You joined the fight against The Forgotten.=
+You are not in the boss fight.=
+You cannot leave the boss fight while in combat.=
+You left the boss fight.=
+The Forgotten has appeared. Use @1 to fight it. Place left : @2=
+The Forgotten was defeated by @1.=
+Teleporting in @1 seconds ...=
+The Forgotten event is over.=
+The zone isn't completely defined.=
+The Forgotten event is already running.=
+The boss spawn could not be kept loaded.=
+The Forgotten could not be spawned.=
+The Forgotten has appeared. Use @1 to fight it.=
+The Forgotten is ready to fight.=
+You need the ffa_manager privilege.=
+Stop the event before changing its positions.=
+@1 set to @2.=
+Event: @1 | Players: @2 / @3=
+@1@nUse to spawn a boss=
+Golden ticket=

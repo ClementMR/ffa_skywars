@@ -2,6 +2,7 @@ local storage = core.get_mod_storage()
 
 ffa_boss = {
     storage = storage,
+    S = core.get_translator("ffa_boss"),
     state = {
         members = {},
         loot_phase = false,

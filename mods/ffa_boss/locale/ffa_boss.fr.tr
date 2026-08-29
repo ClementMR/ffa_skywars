@@ -1,0 +1,26 @@
+# textdomain: ffa_boss
+
+You cannot join the boss fight while in combat.=Vous ne pouvez pas rejoindre le combat contre le boss pendant un combat.
+The Forgotten is not fighting right now.=The Forgotten ne combat pas actuellement.
+You are already in the boss fight.=Vous participez déjà au combat contre le boss.
+The boss fight already has @1 players.=Le combat contre le boss compte déjà @1 joueurs.
+You joined the fight against The Forgotten.=Vous avez rejoint le combat contre The Forgotten.
+You are not in the boss fight.=Vous ne participez pas au combat contre le boss.
+You cannot leave the boss fight while in combat.=Vous ne pouvez pas quitter le combat contre le boss pendant un combat.
+You left the boss fight.=Vous avez quitté le combat contre le boss.
+The Forgotten has appeared. Use @1 to fight it. Place left : @2=The Forgotten est apparu. Utilisez @1 pour le combattre. Places restantes : @2
+The Forgotten was defeated by @1.=The Forgotten a été vaincu par @1.
+Teleporting in @1 seconds ...=Téléportation dans @1 secondes ...
+The Forgotten event is over.=L'événement The Forgotten est terminé.
+The zone isn't completely defined.=La zone n'est pas entièrement définie.
+The Forgotten event is already running.=L'événement The Forgotten est déjà en cours.
+The boss spawn could not be kept loaded.=La zone d'apparition du boss n'a pas pu être maintenue chargée.
+The Forgotten could not be spawned.=The Forgotten n'a pas pu apparaître.
+The Forgotten has appeared. Use @1 to fight it.=The Forgotten est apparu. Utilisez @1 pour le combattre.
+The Forgotten is ready to fight.=The Forgotten est prêt à combattre.
+You need the ffa_manager privilege.=Vous avez besoin du privilège ffa_manager.
+Stop the event before changing its positions.=Arretez l'événement avant de changer ses positions.
+@1 set to @2.=@1 défini sur @2.
+Event: @1 | Players: @2 / @3=Événement : @1 | Joueurs : @2 / @3
+@1@nUse to spawn a boss=@1@nUtilisez-le pour faire apparaître un boss
+Golden ticket=Ticket d'or

@@ -1,7 +1,3 @@
-local function broadcast(text)
-    core.chat_send_all(core.colorize("#d66823", "[Boss] ") .. text)
-end
-
 local function effect(pos, amount)
     mobs:effect(pos, amount, "default_mese_crystal_fragment.png^[colorize:#8B5CF6:180",
         1, 1.5, 3, 10, 1, true)
@@ -10,6 +6,10 @@ end
 local function valid_boss(object)
     local entity = object and object:get_luaentity()
     return entity and entity.name == "ffa_boss:forgotten_player"
+end
+
+function ffa_boss.broadcast(text)
+    core.chat_send_all(core.colorize("#d66823", "[Boss] ") .. text)
 end
 
 function ffa_boss.get_boss()
@@ -172,7 +172,7 @@ local function custom_step(self, dtime)
         or not ffa_boss.is_in_zone(target:get_pos()) then
         self.attack = nil
         self.state = "stand"
-        return_home(self)
+        --return_home(self)
         return
     end
 
@@ -211,11 +211,11 @@ local function boss_death(self, killer)
     release_spawn()
     ffa_boss.drop_rewards(ffa_boss.get_position("boss_spawn") or self.object:get_pos())
     local winner = killer and killer:get_player_name() or self.last_hitter or "the arena"
-    broadcast(("The Forgotten was defeated by %s."):format(winner))
+    ffa_boss.broadcast(ffa_boss.S("The Forgotten was defeated by @1.", winner))
 
     for name in pairs(ffa_boss.state.members) do
         core.chat_send_player(name, core.colorize("#d66823", "[Boss] ") .. 
-            ("Teleporting in %d seconds ..."):format(ffa_boss.settings.reward_time))
+            ffa_boss.S("Teleporting in @1 seconds ...", ffa_boss.settings.reward_time))
     end
 
     core.after(ffa_boss.settings.reward_time, function()
@@ -224,7 +224,7 @@ local function boss_death(self, killer)
         end
         ffa_boss.return_all()
         ffa_boss.state.loot_phase = false
-        broadcast("The Forgotten event is over.")
+        ffa_boss.broadcast(ffa_boss.S("The Forgotten event is over."))
     end)
 end
 
@@ -293,16 +293,16 @@ mobs:register_mob("ffa_boss:forgotten_player", {
 
 function ffa_boss.start_event()
     if not ffa_boss.is_ready() then
-        return false, "The zone isn't completely defined."
+        return false, ffa_boss.S("The zone isn't completely defined.")
     end
 
     local boss_spawn = ffa_boss.get_position("boss_spawn")
     core.load_area(boss_spawn)
     if ffa_boss.is_running() then
-        return false, "The Forgotten event is already running."
+        return false, ffa_boss.S("The Forgotten event is already running.")
     end
     if not keep_spawn_loaded() then
-        return false, "The boss spawn could not be kept loaded."
+        return false, ffa_boss.S("The boss spawn could not be kept loaded.")
     end
 
     ffa_boss.state.members = {}
@@ -310,11 +310,11 @@ function ffa_boss.start_event()
     local object = core.add_entity(boss_spawn, "ffa_boss:forgotten_player")
     if not valid_boss(object) then
         release_spawn()
-        return false, "The Forgotten could not be spawned."
+        return false, ffa_boss.S("The Forgotten could not be spawned.")
     end
 
-    broadcast(("The Forgotten has appeared. Use %s to fight it."):format(core.colorize("cyan", "/boss join")))
-    return true, "The Forgotten is ready to fight."
+    ffa_boss.broadcast(ffa_boss.S("The Forgotten has appeared. Use @1 to fight it.", core.colorize("cyan", "/boss join")))
+    return true, ffa_boss.S("The Forgotten is ready to fight.")
 end
 
 function ffa_boss.stop_event()

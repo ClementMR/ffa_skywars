@@ -37,7 +37,7 @@ core.register_chatcommand("boss", {
                 return false, ffa_boss.S("Stop the event before changing its positions.")
             end
             ffa_boss.set_position(action, player:get_pos())
-            return true, ffa_boss.S("@1 set to @2.", action, ffa_boss.position_text(ffa_boss.get_position(action)))
+            return true, ffa_boss.S("@1 set to @2.", action, core.pos_to_string(ffa_boss.get_position(action)))
         end
 
         if action == "start" then

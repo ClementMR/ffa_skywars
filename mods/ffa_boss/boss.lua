@@ -37,31 +37,19 @@ function ffa_boss.is_running()
 end
 
 local function keep_spawn_loaded()
-    if ffa_boss.state.spawn_forced then
-        return true
-    end
-
     local spawn = ffa_boss.get_position("boss_spawn")
-    if not spawn or not core.forceload_block(spawn, false, -1) then
+    if not spawn or not core.forceload_block(spawn, true, -1) then
         return false
     end
 
-    ffa_boss.state.spawn_forced = true
-    ffa_boss.storage:set_string("spawn_forced", "true")
     return true
 end
 
 local function release_spawn()
-    if not ffa_boss.state.spawn_forced then
-        return
-    end
-
     local spawn = ffa_boss.get_position("boss_spawn")
     if spawn then
         core.forceload_free_block(spawn)
     end
-    ffa_boss.state.spawn_forced = false
-    ffa_boss.storage:set_string("spawn_forced", "")
 end
 
 local function update_nameplate(self)
@@ -94,7 +82,6 @@ local function open_positions(pos)
             local here_def = here and core.registered_nodes[here.name]
             local above_def = above and core.registered_nodes[above.name]
             if here_def and above_def and here_def.buildable_to and above_def.buildable_to
-                and ffa_boss.is_in_zone(target)
             then
                 table.insert(positions, target)
             end
@@ -132,10 +119,10 @@ local function void_burst(self, target)
 
     target:punch(self.object, 1, {
         full_punch_interval = 1,
-        damage_groups = {fleshy = 24},
+        damage_groups = {fleshy = 14},
     })
-    local velocity = vector.multiply(vector.direction(boss_pos, target_pos), 18)
-    velocity.y = 8
+    local velocity = vector.multiply(vector.direction(boss_pos, target_pos), 15)
+    velocity.y = 10
     target:add_velocity(velocity)
     effect(target_pos, 28)
 end
@@ -169,10 +156,9 @@ local function custom_step(self, dtime)
         or not target:is_player()
         or target:get_hp() <= 0
         or not ffa_boss.is_member(target:get_player_name())
-        or not ffa_boss.is_in_zone(target:get_pos()) then
+    then
         self.attack = nil
         self.state = "stand"
-        --return_home(self)
         return
     end
 
@@ -186,31 +172,14 @@ local function custom_step(self, dtime)
     void_burst(self, target)
 end
 
-local function custom_punch(self, hitter)
-    if not hitter or not hitter:is_player() then
-        return
-    end
-
-    if not ffa_boss.is_member(hitter:get_player_name()) then
-        return false
-    end
-
-    self.last_hit = core.get_gametime()
-    self.last_hitter = hitter:get_player_name()
-    if self.state == "attack" and math.random(1, 5) == 1 then
-        teleport_near(self, hitter)
-    end
-end
-
-local function boss_death(self, killer)
+local function boss_death(self, killer_name)
     if ffa_boss.state.loot_phase then
         return
     end
     ffa_boss.state.boss_object = nil
     ffa_boss.state.loot_phase = true
-    release_spawn()
     ffa_boss.drop_rewards(ffa_boss.get_position("boss_spawn") or self.object:get_pos())
-    local winner = killer and killer:get_player_name() or self.last_hitter or "the arena"
+    local winner = killer_name or self.last_hitter or "the arena"
     ffa_boss.broadcast(ffa_boss.S("The Forgotten was defeated by @1.", winner))
 
     for name in pairs(ffa_boss.state.members) do
@@ -224,8 +193,36 @@ local function boss_death(self, killer)
         end
         ffa_boss.return_all()
         ffa_boss.state.loot_phase = false
+        release_spawn()
         ffa_boss.broadcast(ffa_boss.S("The Forgotten event is over."))
     end)
+end
+
+local function custom_punch(self, hitter, time_from_last_punch, tool_capabilities, direction, damage)
+    local killer_name = self.last_hitter
+
+    if hitter and hitter:is_player() then
+        killer_name = hitter:get_player_name()
+        if not ffa_boss.is_member(killer_name) then
+            return false
+        end
+
+        self.last_hit = core.get_gametime()
+        self.last_hitter = killer_name
+        if self.state == "attack" and math.random(1, 5) == 1 then
+            teleport_near(self, hitter)
+        end
+    end
+
+    if math.floor(damage or 0) >= self.health and not self.death_check_pending then
+        self.death_check_pending = true
+        core.after(0, function()
+            self.death_check_pending = nil
+            if self.state == "die" then
+                boss_death(self, killer_name)
+            end
+        end)
+    end
 end
 
 mobs:register_mob("ffa_boss:forgotten_player", {
@@ -237,10 +234,11 @@ mobs:register_mob("ffa_boss:forgotten_player", {
     walk_velocity = 3.2,
     run_velocity = 4.2,
     randomly_turn = false,
-    jump_height = 1.4,
+    jump_height = 4,
+    can_leap = true,
     view_range = 28,
     damage = 22,
-    knock_back = true,
+    knock_back = false,
     fall_damage = false,
     node_damage = false,
     water_damage = 0,
@@ -248,21 +246,21 @@ mobs:register_mob("ffa_boss:forgotten_player", {
     fire_damage = 0,
     suffocation = 0,
     floats = false,
-    reach = 5,
+    reach = 4,
     fear_height = 0,
     attack_chance = 0,
     attack_monsters = true,
     attack_animals = true,
     attack_players = true,
     attack_type = "dogfight",
-    pathfinding = 0,
+    pathfinding = 1,
     makes_footstep_sound = true,
     visual = "mesh",
     visual_size = {x = 1.35, y = 1.35},
-    mesh = "3d_armor_character.b3d",
+    mesh = "forgotten_player.b3d",
     collisionbox = {-0.45, 0, -0.45, 0.45, 2.1, 0.45},
     selectionbox = {-0.7, 0, -0.7, 0.7, 2.4, 0.7},
-    glow = 3,
+    glow = 0,
     textures = {
         "ffa_boss_forgotten.png",
         "blank.png",
@@ -271,16 +269,23 @@ mobs:register_mob("ffa_boss:forgotten_player", {
     animation = {
         stand_start = 0,
         stand_end = 79,
+
         walk_start = 168,
-        walk_end = 187,
+        walk_end = 188,
+
         run_start = 168,
-        run_end = 187,
-        punch_start = 190,
-        punch_end = 198,
+        run_end = 188,
+        run_speed = 40,
+
+        punch_start = 189,
+        punch_end = 199,
+
+        die_start = 162,
+        die_end = 167,
+        die_speed = 2,
     },
     after_activate = function(self)
         self.lifetimer = 20000
-        self.object:set_properties({ static_save = true })
         self.last_hit = core.get_gametime()
         self.next_power = 10
         ffa_boss.state.boss_object = self.object
@@ -288,7 +293,6 @@ mobs:register_mob("ffa_boss:forgotten_player", {
     end,
     do_custom = custom_step,
     do_punch = custom_punch,
-    on_death = boss_death,
 })
 
 function ffa_boss.start_event()

@@ -6,8 +6,7 @@ ffa_boss = {
     state = {
         members = {},
         loot_phase = false,
-        boss_object = nil,
-        spawn_forced = storage:get_string("spawn_forced") == "true",
+        boss_object = nil
     }
 }
 

@@ -50,10 +50,6 @@ function ffa_boss.leave_player(player)
         core.chat_send_player(name, ffa_boss.S("You are not in the boss fight."))
         return false
     end
-    if is_in_combat(name) then
-        core.chat_send_player(name, ffa_boss.S("You cannot leave the boss fight while in combat."))
-        return false
-    end
 
     ffa_boss.state.members[name] = nil
     skywars.teleport_player(player)

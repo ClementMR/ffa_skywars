@@ -1,7 +1,7 @@
 ffa_boss.settings = {
     max_hp = 1000,
     max_players = 10,
-    reward_time = 30,
+    reward_time = 60,
     idle_regen_delay = 30,
     idle_regen_per_second = 1,
     boss_radius = 30
@@ -81,10 +81,6 @@ end
 
 function ffa_boss.is_ready()
     return ffa_boss.config.boss_spawn and ffa_boss.config.player_spawn
-end
-
-function ffa_boss.position_text(pos)
-    return ("(%d, %d, %d)"):format(pos.x, pos.y, pos.z)
 end
 
 function ffa_boss.member_count()

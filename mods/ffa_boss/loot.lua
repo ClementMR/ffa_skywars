@@ -1,7 +1,7 @@
 local rewards = {
-    {name = "default:apple", min = 1, max = 5, weight = 10},
-    {name = "tnt:tnt", min = 1, max = 8, weight = 5},
-    {name = "ctf_ranged:shotgun_loaded", min = 1, max = 1, weight = 5},
+    {name = "default:apple", min = 8, max = 28, weight = 10},
+    {name = "tnt:tnt", min = 1, max = 8, weight = 7},
+    {name = "ctf_ranged:shotgun_loaded", min = 1, max = 1, weight = 4},
     {name = "skywars:golden_apple", min = 1, max = 3, weight = 4},
     {name = "ffa_loot:diamond_key", min = 1, max = 1, weight = 4},
     {name = "skywars:sword_shadow", min = 1, max = 1, weight = 1},

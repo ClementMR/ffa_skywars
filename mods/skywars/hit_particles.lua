@@ -29,7 +29,7 @@ core.register_on_player_hpchange(function(player, hp_change, reason)
         minsize = 0.5,
         maxsize = 1,
 
-        texture = "skywars_blood_particle.png",
+        texture = "heart.png",
     })
 
     return hp_change

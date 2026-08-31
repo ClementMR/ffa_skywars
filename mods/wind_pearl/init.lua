@@ -1,10 +1,8 @@
 wind_pearl = {}
 
 local S = core.get_translator(core.get_current_modname())
-local cooldown = skywars.cooldown()
 
 local config = {
-	cooldown = 1,
 	speed = 45,
 	gravity = 30,
 	knockback_base = 12,
@@ -51,17 +49,17 @@ local function launch_pearl(player)
 end
 
 core.register_craftitem("wind_pearl:wind_pearl", {
-	description = S("Wind Pearl") .. core.colorize("#808080", "\nCooldown " .. config.cooldown .. "s"),
+	description = S("Wind Pearl") .. core.colorize("#808080", "\nCooldown 1s"),
 	inventory_image = "wind_pearl.png",
 	stack_max = config.stack_max,
+	_cooldown = 1,
 
 	on_use = function(itemstack, player)
-		if not valid_player(player) or cooldown:get(player) then
+		if not valid_player(player) then
 			return itemstack
 		end
 
 		if launch_pearl(player) then
-			cooldown:set(player, config.cooldown)
 			itemstack:take_item(1)
 		end
 

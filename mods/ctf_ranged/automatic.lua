@@ -1,15 +1,4 @@
-local api = {}
-local MODNAME = minetest.get_current_modname()
-rawset(_G, MODNAME, api)
-
-local files = {
-	"bullet.lua",
-	"ammo.lua"
-}
-
-for _, file in ipairs(files) do
-	dofile(minetest.get_modpath(MODNAME).."/"..file)
-end
+local api = rawget(_G, "ctf_ranged")
 
 local checking = {}
 -- Returns false if the automatic timer is currently running, returns true otherwise
@@ -18,7 +7,7 @@ function api.enable_automatic(fire_interval, itemstack, user)
 
 	if checking[pname] then return false end
 
-	checking[pname] = minetest.after(fire_interval, function()
+	checking[pname] = core.after(fire_interval, function()
 		checking[pname] = nil
 
 		if user and user:get_player_control().LMB then
@@ -33,7 +22,7 @@ function api.enable_automatic(fire_interval, itemstack, user)
 	return true
 end
 
-minetest.register_on_leaveplayer(function(player)
+core.register_on_leaveplayer(function(player)
 	local pname = player:get_player_name()
 
 	if checking[pname] then

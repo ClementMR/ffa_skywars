@@ -1,5 +1,4 @@
-local MODNAME = minetest.get_current_modname()
-local api = rawget(_G, MODNAME)
+local api = rawget(_G, "ctf_ranged")
 
 function api.also_register_loaded_tool(name, def, user_loaded_def)
 	local loaded_def = table.copy(def)
@@ -11,7 +10,7 @@ function api.also_register_loaded_tool(name, def, user_loaded_def)
 	loaded_def.unloaded_name = name
 	def.loaded_name = name.."_loaded"
 
-	minetest.register_tool(def.loaded_name, loaded_def)
+	core.register_tool(def.loaded_name, loaded_def)
 
 	return name, def
 end
@@ -19,7 +18,7 @@ end
 function api.unload_weapon(weapon, amount)
 	local iname = weapon:get_name()
 	local rounds = assert(
-		minetest.registered_tools[iname].rounds,
+		core.registered_tools[iname].rounds,
 		"Must define 'rounds' property for ranged weapon "..dump(iname)
 	)
 

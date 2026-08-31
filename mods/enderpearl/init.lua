@@ -6,19 +6,12 @@ local callbacks = {}
 -- ! Item Section ! -- 
 ----------------------
 
-local cooldown = skywars.cooldown()
 core.register_craftitem("enderpearl:ender_pearl", {
   description = core.colorize("#1DAEB3", "Ender pearl") .. core.colorize("#808080", "\nCooldown 2s"),
   inventory_image = "enderpearl.png",
   stack_max = 16,
-  on_use =
-    function(_, player, pointed_thing)
-      if cooldown:get(player) then
-        return
-      else
-        cooldown:set(player, 3)
-      end
-
+  _cooldown = 2,
+  on_use = function(itemstack, player, pointed_thing)
       local throw_starting_pos = vector.add({x=0, y=1.5, z=0}, player:get_pos())
       local ender_pearl = core.add_entity(throw_starting_pos, "enderpearl:thrown_ender_pearl", player:get_player_name())
 

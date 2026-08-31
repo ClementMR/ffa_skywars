@@ -1,6 +1,15 @@
-ctf_ranged = {}
+local api = {}
+rawset(_G, "ctf_ranged", api)
 
-local shoot_cooldown = skywars.cooldown()
+local files = {
+	"bullet.lua",
+	"ammo.lua",
+	"automatic.lua"
+}
+
+for _, file in ipairs(files) do
+	dofile(core.get_modpath("ctf_ranged").."/"..file)
+end
 
 local S = core.get_translator(core.get_current_modname())
 local RANGED_DAMAGE_GROUP = "ranged"
@@ -8,7 +17,7 @@ local RANGED_DAMAGE_GROUP = "ranged"
 -- Ranged damage is reduced by ctf_ranged itself, not a second time by the
 -- engine. 3d_armor rebuilds player armor groups whenever equipment changes,
 -- so this group has to be registered with it rather than set on the player.
-if armor and armor.register_armor_group then
+if core.global_exists("armor") and armor.register_armor_group then
 	armor:register_armor_group(RANGED_DAMAGE_GROUP, 100)
 end
 
@@ -210,7 +219,7 @@ local function process_ray(ray, user, look_dir, def, hits)
 						})
 					end
 					if def.liquid_travel_dist then
-						process_ray(rawf.bulletcast(
+						process_ray(api.bulletcast(
 							def.bullet, hitpoint.intersection_point,
 							vector.add(hitpoint.intersection_point, vector.multiply(look_dir, def.liquid_travel_dist)), true, false
 						), user, look_dir, def)
@@ -234,7 +243,7 @@ local function process_ray(ray, user, look_dir, def, hits)
 end
 
 -- Can be overridden for custom behaviour
-function ctf_ranged.can_use_gun(player, name)
+function api.can_use_gun(player, name)
 	return true
 end
 
@@ -268,8 +277,8 @@ local function play_player_positional_sound(user, sound_name, spec)
 	core.sound_play(sound_name, user_spec, true)
 end
 
-function ctf_ranged.simple_register_gun(name, def)
-	core.register_tool(rawf.also_register_loaded_tool(name, {
+function api.simple_register_gun(name, def)
+	core.register_tool(api.also_register_loaded_tool(name, {
 		description = def.description ..
 				("\nDMG: %d | Shots/s: %0.1f | Mag: %d"):format(
 					def.damage * (def.bullet and def.bullet.amount or 1),
@@ -282,12 +291,12 @@ function ctf_ranged.simple_register_gun(name, def)
 		_g_category = def.type,
 		groups = {ranged = 1, [def.type] = 1, tier = def.tier or 1, not_in_creative_inventory = 1},
 		on_use = function(itemstack, user)
-			if not ctf_ranged.can_use_gun(user, name) then
+			if not api.can_use_gun(user, name) then
 				play_player_positional_sound(user, "ctf_ranged_click")
 				return
 			end
 
-			local result = rawf.load_weapon(itemstack, user:get_inventory())
+			local result = api.load_weapon(itemstack, user:get_inventory())
 
 			local sound_name
 			if result:get_name() == itemstack:get_name() then
@@ -314,41 +323,40 @@ function ctf_ranged.simple_register_gun(name, def)
 		loaded_def.wield_image = def.wield_texture or def.texture
 		loaded_def.groups.not_in_creative_inventory = nil
 		loaded_def.on_secondary_use = def.on_secondary_use
+		loaded_def._cooldown = def.fire_interval
 		loaded_def.on_use = function(itemstack, user)
-			if not ctf_ranged.can_use_gun(user, name) then
+			if not api.can_use_gun(user, name) then
 				play_player_positional_sound(user, "ctf_ranged_click")
 				return
 			end
 
-			if shoot_cooldown:get(user) then
-				return
-			end
-
 			if def.automatic then
-				if not rawf.enable_automatic(def.fire_interval, itemstack, user) then
+				if not api.enable_automatic(def.fire_interval, itemstack, user) then
 					return
 				end
-			else
-				shoot_cooldown:set(user, def.fire_interval)
 			end
 
-			local spawnpos, look_dir = rawf.get_bullet_start_data(user)
+			local spawnpos, look_dir = api.get_bullet_start_data(user)
 			local endpos = vector.add(spawnpos, vector.multiply(look_dir, def.range))
 			local rays
 
 			if type(def.bullet) == "table" then
-				def.bullet.texture = "ctf_ranged_bullet.png"
+				def.bullet.texture = "ctf_ranged_bullet.png^[colorize:#FFDB4C:255"
+				def.bullet.glow = 14
 			else
-				def.bullet = {texture = "ctf_ranged_bullet.png"}
+				def.bullet = {
+					texture = "ctf_ranged_bullet.png^[colorize:#FFDB4C:255",
+					glow = 14
+				}
 			end
 
 			if not def.bullet.spread then
-				rays = {rawf.bulletcast(
+				rays = {api.bulletcast(
 					def.bullet,
 					spawnpos, endpos, true, true
 				)}
 			else
-				rays = rawf.spread_bulletcast(def.bullet, spawnpos, endpos, true, true)
+				rays = api.spread_bulletcast(def.bullet, spawnpos, endpos, true, true)
 			end
 
 			play_player_positional_sound(user, def.fire_sound)
@@ -363,7 +371,7 @@ function ctf_ranged.simple_register_gun(name, def)
 			end
 
 			if def.rounds > 0 then
-				return rawf.unload_weapon(itemstack)
+				return api.unload_weapon(itemstack)
 			end
 		end
 
@@ -389,13 +397,7 @@ function ctf_ranged.simple_register_gun(name, def)
 	end))
 end
 
-core.register_on_joinplayer(function(player)
-	if shoot_cooldown:get(player) then
-		core.log("error", "Player is rejoining with a cooldown: "..dump(shoot_cooldown:get(player)))
-	end
-end)
-
-ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
+api.simple_register_gun("ctf_ranged:pistol", {
 	type = "pistol",
 	description = S("Pistol"),
 	texture = "ctf_ranged_pistol.png",
@@ -403,12 +405,12 @@ ctf_ranged.simple_register_gun("ctf_ranged:pistol", {
 	rounds = 75,
 	range = 75,
 	damage = 2,
-	automatic = true,
-	fire_interval = 0.6,
-	liquid_travel_dist = 2
+	liquid_travel_dist = 2,
+	automatic = false,
+	fire_interval = 0.6
 })
 
-ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
+api.simple_register_gun("ctf_ranged:rifle", {
 	type = "rifle",
 	description = S("Rifle"),
 	texture = "ctf_ranged_rifle.png",
@@ -416,12 +418,12 @@ ctf_ranged.simple_register_gun("ctf_ranged:rifle", {
 	rounds = 40,
 	range = 150,
 	damage = 4,
-	automatic = false,
-	fire_interval = 0.8,
 	liquid_travel_dist = 4,
+	automatic = false,
+	fire_interval = 0.8
 })
 
-ctf_ranged.simple_register_gun("ctf_ranged:shotgun", {
+api.simple_register_gun("ctf_ranged:shotgun", {
 	type = "shotgun",
 	description = S("Shotgun"),
 	texture = "ctf_ranged_shotgun.png",
@@ -433,10 +435,11 @@ ctf_ranged.simple_register_gun("ctf_ranged:shotgun", {
 	rounds = 10,
 	range = 24,
 	damage = 2,
-	fire_interval = 2,
+	automatic = false,
+	fire_interval = 2
 })
 
-ctf_ranged.simple_register_gun("ctf_ranged:smg", {
+api.simple_register_gun("ctf_ranged:smg", {
 	type = "smg",
 	description = S("Submachinegun"),
 	texture = "ctf_ranged_smgun.png",
@@ -444,10 +447,10 @@ ctf_ranged.simple_register_gun("ctf_ranged:smg", {
 	bullet = {
 		spread = 1.5,
 	},
-	automatic = true,
 	rounds = 36,
 	range = 75,
 	damage = 1,
-	fire_interval = 0.1,
 	liquid_travel_dist = 2,
+	automatic = true,
+	fire_interval = 0.1
 })

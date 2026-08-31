@@ -9,7 +9,6 @@ core.register_privilege("ffa_manager", {
 local modpath = core.get_modpath(core.get_current_modname())
 
 local files = {
-    "cooldown",
     "maps",
     "map_editor",
     "player",

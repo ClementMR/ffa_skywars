@@ -173,18 +173,13 @@ local function throw_fireball(name, startspeed, player)
 	return data
 end
 
-local cooldown = skywars.cooldown()
 core.register_craftitem("skywars:fireball", {
-    description = S("Fireball"),
+    description = S("Fireball") .. core.colorize("#808080", "\nCooldown 1s"),
 	inventory_image = "skywars_fireball.png",
     range = 2.0,
 	stack_max = 4,
+    _cooldown = 1,
     on_use = function(itemstack, user, pointed_thing)
-        if cooldown:get(user) then
-            return
-        else
-            cooldown:set(user, 1.0)
-        end
 
 		if pointed_thing.type ~= "node" then
 			throw_fireball("skywars:fireball", 17, user)

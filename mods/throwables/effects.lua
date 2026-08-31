@@ -7,44 +7,6 @@ local function range(center, spread)
 	}
 end
 
-function throwables.start_trail(self, velocity)
-	local def = self.def
-	local trail = def.trail or {}
-	local horizontal = math.sqrt(velocity.x ^ 2 + velocity.z ^ 2)
-	local motion = {x = 0, y = velocity.y, z = horizontal}
-	local final_motion = vector.offset(motion, 0, -def.gravity * def.lifetime, 0)
-	local backward = trail.backward or 0.28
-	local offset = trail.offset or 0.012
-	self.trail = core.add_particlespawner({
-		amount = math.floor(def.lifetime * (trail.rate or 72)),
-		time = def.lifetime,
-		attached = self.object,
-		pos_tween = {
-			range(vector.multiply(motion, -offset), 0.04),
-			range(vector.multiply(final_motion, -offset), 0.04),
-		},
-		vel_tween = {
-			range(vector.multiply(motion, -backward), 0.25),
-			range(vector.multiply(final_motion, -backward), 0.25),
-		},
-		acc = {x = 0, y = 0, z = 0},
-		exptime = trail.exptime or {min = 0.22, max = 0.45},
-		size = trail.size or {min = 0.6, max = 1.4},
-		texpool = def.particles,
-		glow = trail.glow or def.glow or 0,
-		collisiondetection = true,
-		collision_removal = true,
-		object_collision = true,
-	})
-end
-
-function throwables.stop_trail(self)
-	if self.trail and self.trail ~= -1 then
-		core.delete_particlespawner(self.trail)
-	end
-	self.trail = nil
-end
-
 function throwables.impact_particles(self, hit)
 	local trail = self.def.trail or {}
 	local backward = vector.multiply(vector.normalize(self.last_velocity), -4.5)

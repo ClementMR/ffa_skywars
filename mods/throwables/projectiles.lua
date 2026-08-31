@@ -98,7 +98,6 @@ local function finish(self, hit)
 		return
 	end
 	self.finished = true
-	throwables.stop_trail(self)
 	self.object:remove()
 	if hit then
 		throwables.impact_particles(self, hit)
@@ -153,7 +152,7 @@ function throwables.register_projectile(name, def)
 			collide_with_objects = false,
 			collisionbox = {-0.1, -0.1, -0.1, 0.1, 0.1, 0.1},
 			visual = "sprite",
-			visual_size = {x = 0.5, y = 0.5},
+			visual_size = {x = 1, y = 1},
 			textures = {def.texture},
 			pointable = false,
 			static_save = false,
@@ -174,11 +173,9 @@ function throwables.register_projectile(name, def)
 			self.object:set_velocity(self.last_velocity)
 			self.object:set_acceleration({x = 0, y = -def.gravity, z = 0})
 			active[self.object] = self
-			throwables.start_trail(self, self.last_velocity)
 		end,
 		on_step = on_step,
 		on_deactivate = function(self)
-			throwables.stop_trail(self)
 			active[self.object] = nil
 		end,
 	})

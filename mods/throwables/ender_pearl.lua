@@ -53,7 +53,6 @@ throwables.register_projectile("enderpearl:thrown_ender_pearl", {
 		end
 		player:add_velocity(vector.multiply(player:get_velocity(), -1))
 		player:set_pos(pos)
-		player:set_hp(player:get_hp() - 2, {type = "set_hp", from = "mod", cause = "enderpearl"})
 		core.sound_play("enderpearl_teleport", {pos = pos, max_hear_distance = 16}, true)
 		if hit.type == "node" then
 			throwables.notify(callbacks, core.get_node(hit.under))

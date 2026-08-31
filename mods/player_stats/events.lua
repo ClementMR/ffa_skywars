@@ -20,11 +20,11 @@ return function(stats)
 		end
 	end)
 
-	core.register_on_punchplayer(function(player, hitter, _, _, _, damage)
+	function stats.api.record_hit(player, hitter)
 		if not is_competitive_player(player) or not is_competitive_player(hitter) then
 			return
 		end
-		if player == hitter or tonumber(damage) == nil or damage <= 0 then
+		if player == hitter then
 			return
 		end
 
@@ -32,6 +32,12 @@ return function(stats)
 			name = hitter:get_player_name(),
 			time = core.get_gametime(),
 		}
+	end
+
+	core.register_on_player_hpchange(function(player, change, reason)
+		if change < 0 and reason.type == "punch" then
+			stats.api.record_hit(player, reason.object)
+		end
 	end)
 
 	core.register_on_dieplayer(function(player)

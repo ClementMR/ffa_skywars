@@ -177,7 +177,7 @@ core.register_craftitem("skywars:fireball", {
     description = S("Fireball") .. core.colorize("#808080", "\nCooldown 1s"),
 	inventory_image = "skywars_fireball.png",
     range = 2.0,
-	stack_max = 4,
+	stack_max = 16,
     _cooldown = 1,
     on_use = function(itemstack, user, pointed_thing)
 

@@ -21,7 +21,8 @@ local regular_loot = {
     {name = "shooter_crossbow:crossbow", chance = 0.14, max = 1},
     {name = "shooter_crossbow:arrow_white", chance = 0.30, min = 4, max = 10},
     {name = "ctf_ranged:ammo", chance = 0.20, min = 2, max = 3},
-    {name = "skywars:fireball", chance = 0.20, min = 1, max = 2},
+    {name = "skywars:fireball", chance = 0.15, min = 1, max = 2},
+    {name = "throwables:snowball", chance = 0.22, min = 1, max = 2},
 
     -- Armors
     {name = "3d_armor:helmet_steel", chance = 0.16, max = 1},
@@ -44,7 +45,6 @@ local mese_loot = {
     {name = "ctf_ranged:rifle_loaded", chance = 0.18, max = 1},
     {name = "ctf_ranged:ammo", chance = 0.25, min = 3, max = 6},
     {name = "fire:flint_and_steel", chance = 0.15, max = 1},
-    {name = "skywars:fireball", chance = 0.30, min = 1, max = 3},
     {name = "tnt:tnt", chance = 0.25, min = 1, max = 3},
 
     {name = "3d_armor:helmet_bronze", chance = 0.22, max = 1},
@@ -75,9 +75,6 @@ local diamond_loot = {
     {name = "default:axe_diamond", chance = 0.14, max = 1},
     {name = "ctf_ranged:smg_loaded", chance = 0.30, max = 1},
     {name = "ctf_ranged:shotgun_loaded", chance = 0.30, max = 1},
-    {name = "ctf_ranged:rifle_loaded", chance = 0.14, max = 1},
-    {name = "ctf_ranged:ammo", chance = 0.65, min = 3, max = 6},
-    {name = "skywars:fireball", chance = 0.25, min = 1, max = 3},
 
     {name = "enderpearl:ender_pearl", chance = 0.30, min = 1, max = 3},
     {name = "wind_pearl:wind_pearl", chance = 0.35, min = 1, max = 3},

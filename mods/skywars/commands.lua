@@ -103,7 +103,7 @@ core.register_chatcommand("notice", {
 			return false, ("The player %s is not online."):format(sendto)
 		end
 
-		core.chat_send_player(sendto, core.colorize("#FF8904", "[ NOTICE ]") .. " " .. message)
+		core.chat_send_player(sendto, core.colorize("#FF8904", "[ PRIVATE NOTICE ] ") .. message)
 
 		core.log("action", "[ PRIVATE NOTICE ] to " .. sendto .. " : " .. message)
 
@@ -120,9 +120,23 @@ core.register_chatcommand("notice_all", {
 			return false, "Invalid usage, see /help notice_all"
 		end
 
-		core.chat_send_all(core.colorize("#FF8904", "[ PUBLIC NOTICE ]") .. " " .. param)
+		core.chat_send_all(core.colorize("#FF8904", "[ NOTICE ] ") .. param)
 
 		core.log("action", ("[ PUBLIC NOTICE ] " .. param))
+	end,
+})
+
+core.register_chatcommand("restart", {
+	params = "[<message>]",
+	description = "Restart the server",
+	privs = {ffa_manager=true},
+	func = function(name, param)
+		local delay = 15
+		core.chat_send_all(core.colorize("#FF8904", "[ NOTICE ] ") .. 
+			("Server restarts in %d seconds. %s"):format(delay, param or ""))
+
+		core.request_shutdown("Restart in 5 seconds...", true,  delay)
+		return true
 	end,
 })
 

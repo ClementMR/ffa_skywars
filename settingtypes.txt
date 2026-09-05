@@ -1,4 +1,4 @@
-[3d_armor]
+[3D Armor]
 
 armor_material_steel (Enable steel armor) bool true
 armor_material_bronze (Enable bronze armor) bool true
@@ -48,6 +48,17 @@ armor_transparent (Transparent armor) bool false
 
 shields_disable_sounds (Disable shield sounds) bool false
 
+[Anti VPN]
+# Cache successful IP verification results to prevent repeated external calls.
+anti_vpn_cache_ttl (Verified IP cache [seconds]) int 900 60
+
+# Briefly cache errors so an unavailable provider cannot be retried in a loop.
+anti_vpn_failure_cache_ttl (Failed verification cache [seconds]) int 30 1
+
+# Bound outstanding requests and the total request rate from connection attempts.
+anti_vpn_max_pending (Maximum pending verifications) int 8 1
+anti_vpn_max_requests_per_minute (Maximum verification requests per minute) int 20 1
+
 [Default]
 # Whether lavacooling should be enabled.
 enable_lavacooling (Enable Lavacooling) bool true
@@ -62,16 +73,26 @@ combat_timer (Combat Timer) int 8
 # Change the immunity timer
 immunity_timer (Immunity Timer) int 14
 
-[Anti VPN]
-# Cache successful IP verification results to prevent repeated external calls.
-anti_vpn_cache_ttl (Verified IP cache [seconds]) int 900 60
+[Fire]
+# Whether fire should be enabled. If disabled, 'basic_flame' nodes will
+# disappear.
+# 'permanent_flame' nodes will remain with either setting.
+enable_fire (Enable Fire) bool true
 
-# Briefly cache errors so an unavailable provider cannot be retried in a loop.
-anti_vpn_failure_cache_ttl (Failed verification cache [seconds]) int 30 1
+# Enable flame sound.
+flame_sound (Flame Sound) bool true
 
-# Bound outstanding requests and the total request rate from connection attempts.
-anti_vpn_max_pending (Maximum pending verifications) int 8 1
-anti_vpn_max_requests_per_minute (Maximum verification requests per minute) int 20 1
+[Player's Stats]
+# The in-memory cache is flushed on logout and shutdown as well as at this interval.
+player_stats_save_interval (Statistics save interval) int 60 30 3600
+
+# Seconds during which the last player that caused damage receives credit for a death.
+player_stats_kill_credit_window (Kill attribution window) int 8 1 120
+
+[SkinsDB]
+# texture filename seperator, default "_"
+# see skindsdb/textures/readme.txt to avoid playername with underscore problem
+skinsdb_fsep (Texture Filename Seperator) enum _ _,.
 
 [Skywars maps]
 # Seconds between automatic map rotations and cleanups.
@@ -84,26 +105,14 @@ skywars_map_rotation_delay (Map rotation warning [seconds]) int 30 0
 # from accidentally configured world-sized cuboids.
 skywars_max_cleanup_volume (Maximum cleanup volume [nodes]) int 20000000 1
 
-[Fire]
-# Whether fire should be enabled. If disabled, 'basic_flame' nodes will
-# disappear.
-# 'permanent_flame' nodes will remain with either setting.
-enable_fire (Enable Fire) bool true
-
-# Enable flame sound.
-flame_sound (Flame Sound) bool true
-
-[SkinsDB]
-# texture filename seperator, default "_"
-# see skindsdb/textures/readme.txt to avoid playername with underscore problem
-skinsdb_fsep (Texture Filename Seperator) enum _ _,.
-
 [Stairs]
 # Enable the stairs mod ABM that replaces the old 'upside down'
 # stair and slab nodes in old maps with the new param2 versions.
 enable_stairs_replace_abm (Enable Stairs ABM) bool false
 
 [TNT]
+enable_tnt (Enable TNT) bool false
+
 # The radius in which nodes will be destroyed by a TNT explosion.
 tnt_radius (TNT radius) int 3 0
 
@@ -111,5 +120,3 @@ tnt_radius (TNT radius) int 3 0
 # Enable cloud variation by the 'weather' mod.
 # Non-functional in V6 or Singlenode mapgens.
 enable_weather (Enable Weather) bool true
-
-enable_tnt (Enable TNT) bool false

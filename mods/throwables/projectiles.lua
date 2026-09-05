@@ -145,7 +145,7 @@ local function on_step(self, dtime, moveresult)
 end
 
 function throwables.register_projectile(name, def)
-	core.register_entity(":" .. name, {
+	core.register_entity(name, {
 		_throwable = true,
 		initial_properties = {
 			physical = true,

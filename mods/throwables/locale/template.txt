@@ -1,0 +1,5 @@
+# textdomain: throwables
+
+Wind Pearl=
+Ender Pearl=
+Snowball=

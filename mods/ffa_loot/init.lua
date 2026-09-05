@@ -59,8 +59,8 @@ local mese_loot = {
     {name = "shields:shield_gold", chance = 0.13, max = 1},
 
     -- Mobility and keys
-    {name = "wind_pearl:wind_pearl", chance = 0.25, min = 1, max = 2},
-    {name = "enderpearl:ender_pearl", chance = 0.12, min = 1, max = 2},
+    {name = "throwables:wind_pearl", chance = 0.25, min = 1, max = 2},
+    {name = "throwables:ender_pearl", chance = 0.12, min = 1, max = 2},
     {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
 
     {name = "ffa_boss:golden_ticket", chance = 0.001, max = 1},
@@ -76,8 +76,8 @@ local diamond_loot = {
     {name = "ctf_ranged:smg_loaded", chance = 0.30, max = 1},
     {name = "ctf_ranged:shotgun_loaded", chance = 0.30, max = 1},
 
-    {name = "enderpearl:ender_pearl", chance = 0.30, min = 1, max = 3},
-    {name = "wind_pearl:wind_pearl", chance = 0.35, min = 1, max = 3},
+    {name = "throwables:ender_pearl", chance = 0.30, min = 1, max = 3},
+    {name = "throwables:wind_pearl", chance = 0.35, min = 1, max = 3},
 
     {name = "3d_armor:helmet_diamond", chance = 0.20, max = 1},
     {name = "3d_armor:chestplate_diamond", chance = 0.12, max = 1},

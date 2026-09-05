@@ -189,5 +189,3 @@ core.register_craftitem("skywars:fireball", {
 		return itemstack
 	end
 })
-
-core.register_alias_force("ranged:fireball", "skywars:fireball")

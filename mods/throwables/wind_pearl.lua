@@ -3,8 +3,8 @@ return function(throwables)
 local callbacks, blocks = {}, {}
 local radius, strength, lift = 7, 10, 4
 
-throwables.register_projectile("wind_pearl:thrown_wind_pearl", {
-	speed = 12,
+throwables.register_projectile("throwables:thrown_wind_pearl", {
+	speed = 14,
 	gravity = 20,
 	lifetime = 6,
 	texture = "wind_pearl.png",
@@ -41,19 +41,18 @@ throwables.register_projectile("wind_pearl:thrown_wind_pearl", {
 				end
 			end
 		end
-		--core.sound_play("wind_pearl_throw", {pos = center, gain = 0.8, pitch = 0.8, max_hear_distance = 20}, true)
 		if hit.type == "node" then
 			throwables.notify(callbacks, core.get_node(hit.under))
 		end
 	end,
 })
 
-core.register_craftitem(":wind_pearl:wind_pearl", {
-	description = "Wind Pearl" .. core.colorize("#808080", "\nCooldown 1s"),
+core.register_craftitem("throwables:wind_pearl", {
+	description = throwables.S("Wind Pearl") .. core.colorize("#808080", "\nCooldown 1s"),
 	inventory_image = "wind_pearl.png",
 	stack_max = 16,
 	_cooldown = 1,
-	on_use = throwables.use("wind_pearl:thrown_wind_pearl", "throwables_throw"),
+	on_use = throwables.use("throwables:thrown_wind_pearl", "throwables_throw"),
 })
 
 function throwables.on_knockback(callback)

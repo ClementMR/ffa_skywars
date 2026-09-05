@@ -40,3 +40,6 @@ core.hud_replace_builtin("breath", {
 	size = {x = 24, y = 24},
 	offset = {x = 25, y= -120},
 })
+
+core.register_alias_force("wind_pearl:wind_pearl", "throwables:wind_pearl")
+core.register_alias_force("enderpearl:ender_pearl", "throwables:ender_pearl")

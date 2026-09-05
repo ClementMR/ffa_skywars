@@ -84,11 +84,11 @@ core.register_on_punchplayer(function(player, hitter)
     end
     if timers.is_immune(hitter_name) then
         timers.clear(hitter)
-        core.chat_send_player(hitter_name, core.colorize("blue", S("[Immunity] ")) .. S("Your immunity has been lifted!"))
+        core.chat_send_player(hitter_name, core.colorize("#42D3F2", S("[Immunity] ")) .. S("Your immunity has been lifted!"))
         return false
     end
     if timers.is_immune(target_name) then
-        core.chat_send_player(hitter_name, core.colorize("blue", S("[Immunity] ")) .. S("Player @1 is immune!", target_name))
+        core.chat_send_player(hitter_name, core.colorize("#42D3F2", S("[Immunity] ")) .. S("Player @1 is immune!", target_name))
         return true
     end
 end)

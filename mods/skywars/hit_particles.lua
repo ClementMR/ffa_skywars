@@ -11,7 +11,7 @@ core.register_on_player_hpchange(function(player, hp_change, reason)
     pos.y = pos.y + 1
 
     core.add_particlespawner({
-        amount = 30,
+        amount = 15,
         time = 0.05,
 
         minpos = vector.subtract(pos, 0.3),

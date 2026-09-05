@@ -32,10 +32,10 @@ local function destination(player, hit)
 	end
 end
 
-throwables.register_projectile("enderpearl:thrown_ender_pearl", {
+throwables.register_projectile("throwables:thrown_ender_pearl", {
 	speed = 30,
 	gravity = 16,
-	lifetime = 6,
+	lifetime = 10,
 	texture = "enderpearl.png",
 	glow = 5,
 	particles = {
@@ -60,12 +60,12 @@ throwables.register_projectile("enderpearl:thrown_ender_pearl", {
 	end,
 })
 
-core.register_craftitem(":enderpearl:ender_pearl", {
-	description = core.colorize("#1DAEB3", "Ender Pearl") .. core.colorize("#808080", "\nCooldown 2s"),
+core.register_craftitem("throwables:ender_pearl", {
+	description = core.colorize("#1DAEB3", throwables.S("Ender Pearl")) .. core.colorize("#808080", "\nCooldown 2s"),
 	inventory_image = "enderpearl.png",
 	stack_max = 16,
 	_cooldown = 2,
-	on_use = throwables.use("enderpearl:thrown_ender_pearl", "throwables_throw"),
+	on_use = throwables.use("throwables:thrown_ender_pearl", "throwables_throw"),
 })
 
 function throwables.on_teleport(callback)

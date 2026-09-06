@@ -61,7 +61,7 @@ throwables.register_projectile("throwables:thrown_ender_pearl", {
 })
 
 core.register_craftitem("throwables:ender_pearl", {
-	description = core.colorize("#1DAEB3", throwables.S("Ender Pearl")) .. core.colorize("#808080", "\nCooldown 2s"),
+	description = core.colorize("#1DAEB3", throwables.S("Ender Pearl")),
 	inventory_image = "enderpearl.png",
 	stack_max = 16,
 	_cooldown = 2,

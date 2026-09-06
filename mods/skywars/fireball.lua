@@ -174,7 +174,7 @@ local function throw_fireball(name, startspeed, player)
 end
 
 core.register_craftitem("skywars:fireball", {
-    description = S("Fireball") .. core.colorize("#808080", "\nCooldown 1s"),
+    description = S("Fireball"),
 	inventory_image = "skywars_fireball.png",
     range = 2.0,
 	stack_max = 16,

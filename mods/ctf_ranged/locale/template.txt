@@ -1,7 +1,6 @@
 # textdomain: ctf_ranged
 
 Ammo=
-Used to reload guns=
 Pistol=
 Rifle=
 Shotgun=

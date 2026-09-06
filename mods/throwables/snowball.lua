@@ -32,7 +32,7 @@ throwables.register_projectile("throwables:thrown_snowball", {
 })
 
 core.register_craftitem("throwables:snowball", {
-	description = throwables.S("Snowball") .. core.colorize("#808080", "\nCooldown 0.4s"),
+	description = throwables.S("Snowball"),
 	inventory_image = "default_snowball.png",
 	stack_max = 16,
 	_cooldown = 0.4,

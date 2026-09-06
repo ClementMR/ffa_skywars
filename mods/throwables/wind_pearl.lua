@@ -48,7 +48,7 @@ throwables.register_projectile("throwables:thrown_wind_pearl", {
 })
 
 core.register_craftitem("throwables:wind_pearl", {
-	description = throwables.S("Wind Pearl") .. core.colorize("#808080", "\nCooldown 1s"),
+	description = throwables.S("Wind Pearl"),
 	inventory_image = "wind_pearl.png",
 	stack_max = 16,
 	_cooldown = 1,

@@ -44,3 +44,6 @@ Language:=Langue :
 @1 left the game.=@1 a quitté la partie.
 @1 left the game during combat!=@1 a quitté la partie en combat !
 (timed out)=(délai dépassé)
+Void Burst can only be used in the active arena.=L'Explosion du néant ne peut être utilisée que dans l'arène active.
+Void Burst recharges in @1s.=L'Explosion du néant se recharge dans @1 s.
+Void Burst (4 damage, 5-node radius)=Explosion du néant (4 dégâts, rayon de 5 blocs)

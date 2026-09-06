@@ -44,3 +44,6 @@ Language:=
 @1 left the game.=
 @1 left the game during combat!=
 (timed out)=
+Void Burst can only be used in the active arena.=
+Void Burst recharges in @1s.=
+Void Burst (4 damage, 5-node radius)=

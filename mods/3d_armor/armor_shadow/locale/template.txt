@@ -1,0 +1,6 @@
+# textdomain: armor_shadow
+
+Shadow Helmet=
+Shadow Chestplate=
+Shadow Leggings=
+Shadow Boots=

@@ -1,11 +1,18 @@
 local rewards = {
-    {name = "default:apple", min = 8, max = 28, weight = 10},
-    {name = "tnt:tnt", min = 1, max = 8, weight = 7},
-    {name = "ctf_ranged:shotgun_loaded", min = 1, max = 1, weight = 4},
-    {name = "skywars:golden_apple", min = 1, max = 3, weight = 4},
-    {name = "ffa_loot:diamond_key", min = 1, max = 1, weight = 4},
+    {name = "default:apple", min = 6, max = 16, weight = 10},
+    {name = "tnt:tnt", min = 1, max = 4, weight = 5},
+    {name = "ctf_ranged:shotgun_loaded", min = 1, max = 1, weight = 3},
+    {name = "ctf_ranged:smg_loaded", min = 1, max = 1, weight = 3},
+    {name = "throwables:ender_pearl", min = 1, max = 3, weight = 4},
+    {name = "throwables:wind_pearl", min = 1, max = 3, weight = 4},
+    {name = "skywars:golden_apple", min = 1, max = 2, weight = 4},
+    {name = "ffa_loot:diamond_key", min = 1, max = 1, weight = 3},
     {name = "skywars:sword_shadow", min = 1, max = 1, weight = 1},
-    {name = "skywars:totem_of_undying", min = 1, max = 1, weight = 1}
+    {name = "3d_armor:helmet_shadow", min = 1, max = 1, weight = 1},
+    {name = "3d_armor:chestplate_shadow", min = 1, max = 1, weight = 1},
+    {name = "3d_armor:leggings_shadow", min = 1, max = 1, weight = 1},
+    {name = "3d_armor:boots_shadow", min = 1, max = 1, weight = 1},
+    {name = "skywars:totem_of_undying", min = 1, max = 1, weight = 1},
 }
 
 local function reward_pool()
@@ -26,7 +33,7 @@ function ffa_boss.drop_rewards(pos)
         return
     end
 
-    for _ = 1, math.random(16, 26) do
+    for _ = 1, math.random(16, 24) do
         local reward = pool[math.random(#pool)]
         local drop_pos = vector.add(pos, {
             x = math.random(-7, 7),

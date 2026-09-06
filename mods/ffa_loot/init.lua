@@ -86,7 +86,11 @@ local diamond_loot = {
     -- Lifesavers
     {name = "skywars:golden_apple", chance = 0.10, max = 2},
     {name = "skywars:totem_of_undying", chance = 0.05, max = 1},
-    {name = "skywars:sword_shadow", chance = 0.025, max = 1},
+    {name = "skywars:sword_shadow", chance = 0.015, max = 1},
+    {name = "3d_armor:helmet_shadow", chance = 0.012, max = 1},
+    {name = "3d_armor:chestplate_shadow", chance = 0.008, max = 1},
+    {name = "3d_armor:leggings_shadow", chance = 0.008, max = 1},
+    {name = "3d_armor:boots_shadow", chance = 0.012, max = 1},
 }
 
 local REGULAR_CHEST = 30

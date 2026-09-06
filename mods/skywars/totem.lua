@@ -10,7 +10,7 @@ local function show_totem_hud(player)
     hud_api.show(player, "skywars:totem", {
         type = "image",
         position = {x = 0.5, y = 0.37},
-        text = "totem_of_undying.png",
+        text = "skywars_totem_of_undying.png",
         scale = {x = 8, y = 8},
         alignment = {x = 0, y = 0},
     }, {duration = 2})
@@ -42,7 +42,7 @@ local function revive_player(player)
         maxexptime = 3.0,
         minsize = 2,
         maxsize = 6,
-        texture = "totem_of_undying.png",
+        texture = "skywars_totem_of_undying.png",
         glow = 14,
     })
 

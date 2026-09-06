@@ -1,14 +1,6 @@
 # textdomain: item_details
 
 Damage=Dégâts
-Fire rate=Cadence
-@1 shots/s=@1 tirs/s
-Magazine=Chargeur
-Loaded=Chargé
-Yes=Oui
-No=Non
-Range=Portée
-@1 nodes=@1 blocs
 Attack cooldown=Cooldown d'attaque
 Cooldown=Cooldown
 @1 s=@1 s
@@ -25,14 +17,6 @@ Feet=Pieds
 Shield=Bouclier
 Armor protection=Protection d'armure
 Armor healing chance=Chance de soin de l'armure
-Durability=Durabilité
-~@1 hits=~@1 coups
-~@1 uses=~@1 utilisations
-Ability=Aptitude
-Ability cooldown=Cooldown de l'aptitude
 Usage=Utilisation
 Max stack=Stack maximal
-Reloads ranged weapons=Recharge les armes à distance
-Starts The Forgotten boss event=Lance l'événement de boss L'Oublié
-Left-click: rotate face; right-click: rotate axis=Clic gauche : pivote la face ; clic droit : pivote l'axe
 Prevents death and restores 5 HP=Empêche la mort et restaure 5 PV

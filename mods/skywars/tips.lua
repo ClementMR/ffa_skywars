@@ -1,6 +1,6 @@
 local S = core.get_translator(core.get_current_modname())
 
-local MESSAGE_INTERVAL = 60 * 3
+local MESSAGE_INTERVAL = 60 * 5
 local messages = {
 	{kind = "tip", text = "Use blocks to gain height, create cover, and control the fight."},
 	{kind = "tip", text = "Keep moving after a fight: another player may already be nearby."},

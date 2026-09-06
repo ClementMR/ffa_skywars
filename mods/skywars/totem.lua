@@ -2,7 +2,7 @@ local S = core.get_translator(core.get_current_modname())
 
 core.register_craftitem("skywars:totem_of_undying", {
     description = core.colorize("#b1b10e", S("Totem of Undying")),
-    inventory_image = "totem_of_undying.png",
+    inventory_image = "skywars_totem_of_undying.png",
     stack_max = 1,
 })
 

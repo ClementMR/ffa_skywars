@@ -1,14 +1,6 @@
 # textdomain: item_details
 
 Damage=
-Fire rate=
-@1 shots/s=
-Magazine=
-Loaded=
-Yes=
-No=
-Range=
-@1 nodes=
 Attack cooldown=
 Cooldown=
 @1 s=
@@ -25,14 +17,6 @@ Feet=
 Shield=
 Armor protection=
 Armor healing chance=
-Durability=
-~@1 hits=
-~@1 uses=
-Ability=
-Ability cooldown=
 Usage=
 Max stack=
-Reloads ranged weapons=
-Starts The Forgotten boss event=
-Left-click: rotate face; right-click: rotate axis=
 Prevents death and restores 5 HP=

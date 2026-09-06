@@ -22,7 +22,7 @@ if core.global_exists("armor") and armor.register_armor_group then
 end
 
 core.register_craftitem("ctf_ranged:ammo", {
-	description = S("Ammo"),
+	description = S("Ammo").."\n"..S("Used to reload guns"),
 	inventory_image = "ctf_ranged_ammo.png",
 })
 
@@ -278,19 +278,16 @@ local function play_player_positional_sound(user, sound_name, spec)
 end
 
 function api.simple_register_gun(name, def)
-	local item_info = {
-		ranged_damage = def.damage * (def.bullet and def.bullet.amount or 1),
-		fire_rate = 1 / def.fire_interval,
-		magazine = def.rounds,
-		range = def.range,
-		loaded = false,
-	}
 	core.register_tool(api.also_register_loaded_tool(name, {
-		description = def.description,
+		description = def.description ..
+		("\nDMG: %d | Shots/s: %0.1f | Mag: %d"):format(
+			def.damage * (def.bullet and def.bullet.amount or 1),
+			1 / def.fire_interval,
+			def.rounds
+		),
 		inventory_image = def.texture .. "^[colorize:#F44:42",
 		ammo = def.ammo or "ctf_ranged:ammo",
 		rounds = def.rounds,
-		_item_info = item_info,
 		_g_category = def.type,
 		groups = {ranged = 1, [def.type] = 1, tier = def.tier or 1, not_in_creative_inventory = 1},
 		on_use = function(itemstack, user)
@@ -314,9 +311,13 @@ function api.simple_register_gun(name, def)
 		end,
 	},
 	function(loaded_def)
-		loaded_def.description = def.description
-		loaded_def._item_info = table.copy(item_info)
-		loaded_def._item_info.loaded = true
+		loaded_def.description = def.description ..
+				("\nDMG: %d | Shots/s: %0.1f | Mag: %d"):format(
+					def.damage * (def.bullet and def.bullet.amount or 1),
+					1 / def.fire_interval,
+					def.rounds
+				) ..
+				" (Loaded)"
 		loaded_def.inventory_image = def.texture
 		loaded_def.inventory_overlay = def.texture_overlay
 		loaded_def.wield_image = def.wield_texture or def.texture

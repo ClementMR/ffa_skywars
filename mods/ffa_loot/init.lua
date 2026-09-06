@@ -1,9 +1,5 @@
 local S = core.get_translator("ffa_loot")
 
--- Each entry is rolled once whenever a chest refills.  Keeping the odds on
--- the entries themselves (instead of rolling the whole table several times)
--- makes a refill predictable to balance: `chance = 0.25` means a 25% chance
--- for that stack to be present in this chest.
 local regular_loot = {
     -- Building and survival
     {name = "skywars:leaves", chance = 1.00, min = 12, max = 20},
@@ -61,7 +57,7 @@ local mese_loot = {
     {name = "throwables:ender_pearl", chance = 0.12, min = 1, max = 2},
     {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
 
-    {name = "ffa_boss:golden_ticket", chance = 0.001, max = 1},
+    {name = "ffa_boss:golden_ticket", chance = 0.005, max = 1},
 }
 
 local diamond_loot = {
@@ -85,7 +81,6 @@ local diamond_loot = {
 
     -- Lifesavers
     {name = "skywars:golden_apple", chance = 0.10, max = 2},
-    {name = "skywars:totem_of_undying", chance = 0.05, max = 1},
     {name = "skywars:sword_shadow", chance = 0.015, max = 1},
     {name = "3d_armor:helmet_shadow", chance = 0.012, max = 1},
     {name = "3d_armor:chestplate_shadow", chance = 0.008, max = 1},

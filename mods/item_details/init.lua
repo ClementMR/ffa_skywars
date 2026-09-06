@@ -6,15 +6,9 @@ local food_healing = {
 	["farming:bread"] = 5,
 	["flowers:mushroom_brown"] = 1,
 	["flowers:mushroom_red"] = -5,
-	["maptools:superapple"] = 20,
-	["xdecor:bowl_soup"] = 30,
-	["xdecor:honey"] = 2,
 }
 
 local special = {
-	["ctf_ranged:ammo"] = {usage = S("Reloads ranged weapons")},
-	["ffa_boss:golden_ticket"] = {usage = S("Starts The Forgotten boss event")},
-	["screwdriver:screwdriver"] = {usage = S("Left-click: rotate face; right-click: rotate axis")},
 	["skywars:golden_apple"] = {full_heal = true, absorption = 4},
 	["skywars:totem_of_undying"] = {usage = S("Prevents death and restores 5 HP")},
 }
@@ -46,14 +40,6 @@ local function armor_slot(groups)
 	end
 end
 
-local function tool_uses(tool_capabilities)
-	local uses = 0
-	for _, capability in pairs(tool_capabilities.groupcaps or {}) do
-		uses = math.max(uses, tonumber(capability.uses) or 0)
-	end
-	return uses
-end
-
 local function item_info(name, def)
 	local info = {}
 	for key, value in pairs(special[name] or {}) do
@@ -77,19 +63,6 @@ local function build_details(name, def)
 
 	if damage and damage > 0 then
 		add_stat(lines, S("Damage"), format_number(damage), "#EF4444")
-	end
-	if info.fire_rate then
-		add_stat(lines, S("Fire rate"), S("@1 shots/s", format_number(info.fire_rate)), "#F97316")
-	end
-	if info.magazine then
-		add_stat(lines, S("Magazine"), format_number(info.magazine), "#FACC15")
-	end
-	if info.loaded ~= nil then
-		add_stat(lines, S("Loaded"), info.loaded and S("Yes") or S("No"),
-			info.loaded and "#22C55E" or "#EF4444")
-	end
-	if info.range or def.range then
-		add_stat(lines, S("Range"), S("@1 nodes", format_number(info.range or def.range)), "#38BDF8")
 	end
 	if tool_capabilities.full_punch_interval then
 		add_stat(lines, S("Attack cooldown"),
@@ -120,29 +93,16 @@ local function build_details(name, def)
 		if groups.armor_heal and groups.armor_heal > 0 then
 			add_stat(lines, S("Armor healing chance"), format_number(groups.armor_heal) .. "%", "#22C55E")
 		end
-		if groups.armor_use and groups.armor_use > 0 then
-			add_stat(lines, S("Durability"),
-				S("~@1 hits", math.floor(65535 / groups.armor_use)), "#C4B5FD")
-		end
-	else
-		local uses = tool_uses(tool_capabilities)
-		if uses > 0 then
-			add_stat(lines, S("Durability"), S("~@1 uses", uses), "#C4B5FD")
-		end
 	end
 
-	if info.ability then
-		add_stat(lines, S("Ability"), info.ability, "#A78BFA")
-	end
-	if info.ability_cooldown then
-		add_stat(lines, S("Ability cooldown"),
-			S("@1 s", format_number(info.ability_cooldown)), "#8B5CF6")
-	end
 	if info.usage then
 		add_stat(lines, S("Usage"), info.usage, "#67E8F9")
 	end
 
-	add_stat(lines, S("Max stack"), def.stack_max or 99, "#D4D4D8")
+	if def.stack_max and def.stack_max ~= 1 then
+		add_stat(lines, S("Max stack"), def.stack_max, "#D4D4D8")
+	end
+
 	return lines
 end
 

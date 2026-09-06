@@ -23,6 +23,7 @@ local files = {
     "vanish",
     "commands",
 	"tips",
+    "shadow_sword",
     "golden_apple",
     "hit_particles"
 }

@@ -7,12 +7,12 @@ local rewards = {
     {name = "throwables:wind_pearl", min = 1, max = 3, weight = 4},
     {name = "skywars:golden_apple", min = 1, max = 2, weight = 4},
     {name = "ffa_loot:diamond_key", min = 1, max = 1, weight = 3},
+    {name = "skywars:totem_of_undying", min = 1, max = 1, weight = 2},
     {name = "skywars:sword_shadow", min = 1, max = 1, weight = 1},
     {name = "3d_armor:helmet_shadow", min = 1, max = 1, weight = 1},
     {name = "3d_armor:chestplate_shadow", min = 1, max = 1, weight = 1},
     {name = "3d_armor:leggings_shadow", min = 1, max = 1, weight = 1},
     {name = "3d_armor:boots_shadow", min = 1, max = 1, weight = 1},
-    {name = "skywars:totem_of_undying", min = 1, max = 1, weight = 1},
 }
 
 local function reward_pool()

@@ -30,7 +30,7 @@ local function generate_sfinv_formspec(player)
 		"image[5.92,1.25;1,1;sfinv_crafting_arrow.png]",
 
 		"box[1.15,0;2.25,3.9;#030303]",
-		"image[1.2,4.01;1,1;totem_of_undying.png^[opacity:40]",
+		"image[1.2,4.01;1,1;skywars_totem_of_undying.png^[opacity:40]",
 		"list[current_player;totem;1.2,4.01;1,1;]",
 
 		"listring[current_player;craft]",

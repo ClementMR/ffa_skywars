@@ -140,6 +140,12 @@ core.register_entity("playertag:tag", {
         pointable = false,
     },
     owner_name = "",
+    on_activate = function(self)
+        self.object:set_armor_groups({immortal = 1})
+    end,
+    on_blast = function()
+        return false, false, {}
+    end,
     on_step = function(self)
         local parent = self.object:get_attach()
         if not parent or not parent:is_player() then

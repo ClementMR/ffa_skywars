@@ -191,12 +191,15 @@ local function entity_physics(pos, radius, drops, in_water)
 				end
 				obj:set_hp(hp)
 			end
+		elseif obj:get_attach() then
+			-- Attached entities are visual extensions of their parent. Applying
+			-- blast physics to them can detach or destroy nameplates and armor.
 		elseif obj:get_entity_name() ~= "tnt_revamped:empty_tnt_entity" then
 			local do_damage = true
 			local do_knockback = true
 			local entity_drops = {}
 			local luaobj = obj:get_luaentity()
-			local objdef = registered_entities[luaobj.name]
+			local objdef = luaobj and registered_entities[luaobj.name]
 
 			if objdef and objdef.on_blast then
 				do_damage, do_knockback, entity_drops = objdef.on_blast(luaobj, damage)

@@ -46,8 +46,7 @@ if #internal.errors > 0 then
 	return -- Nonsense to load something that's not working
 end
 
--- http://minetest.fensta.bplaced.net/api/apidoku.md
-local root_url = "http://skinsdb.terraqueststudios.net"
+local root_url = "https://skinsdb.terraqueststudios.net"
 local page_url = root_url .. "/api/v1/content?client=mod&page=%i" -- [1] = Page#
 
 local mod_path = skins.modpath
@@ -60,46 +59,84 @@ local function fetch_url(url, callback)
 		url = url,
 		user_agent = _ID_
 	}, function(result)
-		if result.succeeded then
-			if result.code ~= 200 then
-				core.log("warning", ("%s: STATUS=%i URL=%s"):format(
-					_ID_, result.code, url))
-			end
+		if result.succeeded and result.code == 200 then
 			return callback(result.data)
 		end
-		core.log("warning", ("%s: Failed to download URL=%s"):format(
-			_ID_, url))
+		core.log("warning", ("%s: Failed to download URL=%s STATUS=%s"):format(
+			_ID_, url, tostring(result.code)))
 	end)
 end
 
 -- Insecure workaround since meta/ and textures/ cannot be written to
 local function unsafe_file_write(path, contents)
-	local f = ie.io.open(path, "wb")
-	f:write(contents)
-	f:close()
+	local file, error_message = ie.io.open(path, "wb")
+	if not file then
+		core.log("error", ("%s: Cannot write %s: %s"):format(
+			_ID_, path, tostring(error_message)))
+		return false
+	end
+	local written, write_error = file:write(contents)
+	file:close()
+	if not written then
+		core.log("error", ("%s: Cannot write %s: %s"):format(
+			_ID_, path, tostring(write_error)))
+		return false
+	end
+	return true
 end
 
 -- Takes a valid skin table from the Skins Database and saves it
 local function safe_single_skin(skin)
+	if type(skin) ~= "table" or skin.type ~= "image/png" then
+		return false
+	end
+
+	local raw_id = tostring(skin.id or "")
+	if not raw_id:match("^%d+$") then
+		core.log("warning", _ID_ .. ": Rejected invalid skin ID")
+		return false
+	end
+	local id = tonumber(raw_id)
+	if not id or id <= 1 or id > 1000000000 then
+		return false
+	end
+
+	local encoded_image = type(skin.img) == "string" and skin.img or ""
+	if #encoded_image > 1398208 then
+		return false
+	end
+	local image = core.decode_base64(encoded_image)
+	if type(image) ~= "string" or #image < 24 or #image > 1048576
+			or image:sub(1, 8) ~= "\137PNG\r\n\26\n" then
+		core.log("warning", ("%s: Rejected invalid PNG for skin %d"):format(_ID_, id))
+		return false
+	end
+
+	local function metadata(value)
+		return tostring(value or ""):gsub("[\r\n]", " ")
+	end
 	local meta = {
-		skin.name,
-		skin.author,
-		skin.license
+		metadata(skin.name),
+		metadata(skin.author),
+		metadata(skin.license)
 	}
 
-	local name =  "character" .. skins.fsep .. skin.id
+	local name = "character" .. skins.fsep .. id
 
-	-- core.safe_file_write does not work here
-	unsafe_file_write(
+	local meta_written = unsafe_file_write(
 		meta_path .. name .. ".txt",
 		table.concat(meta, "\n")
 	)
 
-	unsafe_file_write(
+	local image_written = unsafe_file_write(
 		skins_path .. name .. ".png",
-		core.decode_base64(skin.img)
+		image
 	)
+	if not meta_written or not image_written then
+		return false
+	end
 	core.log("action", ("%s: Completed skin %s"):format(_ID_, name))
+	return true
 end
 
 -- Get total pages since it'll just return the last page all over again
@@ -107,8 +144,12 @@ internal.get_pages_count = function(callback, ...)
 	local vars = {...}
 	fetch_url(page_url:format(1) .. "&per_page=1", function(data)
 		local list = core.parse_json(data)
-		-- "per_page" defaults to 20 if left away (docs say something else, though)
-		callback(math.ceil(list.pages / 20), unpack(vars))
+		local pages = type(list) == "table" and tonumber(list.pages)
+		if not pages or pages < 0 then
+			core.log("warning", _ID_ .. ": Invalid page-count response")
+			return
+		end
+		callback(math.ceil(pages / 20), unpack(vars))
 	end)
 end
 
@@ -123,13 +164,12 @@ internal.fetch_function = function(pages_total, start_page, len)
 			core.log("action", ("%s: Page %i"):format(_ID_, page_cpy))
 
 			local list = core.parse_json(data)
-			for i, skin in pairs(list.skins) do
-				assert(skin.type == "image/png")
-				assert(skin.id ~= "")
-
-				if skin.id ~= 1 then -- Skin 1 is bundled with skinsdb
-					safe_single_skin(skin)
-				end
+			if type(list) ~= "table" or type(list.skins) ~= "table" then
+				core.log("warning", _ID_ .. ": Invalid skins response")
+				return
+			end
+			for _, skin in pairs(list.skins) do
+				safe_single_skin(skin)
 			end
 
 			if page_cpy == end_page then

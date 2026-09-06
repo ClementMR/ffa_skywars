@@ -19,6 +19,7 @@ The Forgotten could not be spawned.=
 The Forgotten has appeared. Use @1 to fight it.=
 The Forgotten is ready to fight.=
 You need the ffa_manager privilege.=
+You must be connected to set this position.=
 Stop the event before changing its positions.=
 @1 set to @2.=
 Event: @1 | Players: @2 / @3=

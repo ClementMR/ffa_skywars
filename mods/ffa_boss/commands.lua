@@ -32,7 +32,10 @@ core.register_chatcommand("boss", {
             return false, ffa_boss.S("You need the ffa_manager privilege.")
         end
 
-        if player and action == "boss_spawn" or action == "player_spawn" then
+        if action == "boss_spawn" or action == "player_spawn" then
+            if not player then
+                return false, ffa_boss.S("You must be connected to set this position.")
+            end
             if ffa_boss.is_running() then
                 return false, ffa_boss.S("Stop the event before changing its positions.")
             end

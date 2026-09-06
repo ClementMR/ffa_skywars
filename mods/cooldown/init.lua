@@ -4,9 +4,23 @@ local players = {}
 
 function cooldown.set(player, itemname, time)
 	local name = player:get_player_name()
+	local duration = math.max(0, tonumber(time) or 0)
+	local expires_at = core.get_us_time() + (duration * 1000000)
 
 	players[name] = players[name] or {}
-	players[name][itemname] = core.get_us_time() + (time * 1000000)
+	players[name][itemname] = expires_at
+
+	core.after(duration, function()
+		local player_cooldowns = players[name]
+		if not player_cooldowns or player_cooldowns[itemname] ~= expires_at then
+			return
+		end
+
+		player_cooldowns[itemname] = nil
+		if next(player_cooldowns) == nil then
+			players[name] = nil
+		end
+	end)
 end
 
 function cooldown.get(player, itemname)
@@ -20,6 +34,9 @@ function cooldown.get(player, itemname)
 
 	if remaining <= 0 then
 		players[name][itemname] = nil
+		if next(players[name]) == nil then
+			players[name] = nil
+		end
 		return 0
 	end
 
@@ -56,9 +73,4 @@ core.register_on_mods_loaded(function()
 			})
 		end
 	end
-end)
-
-
-core.register_on_leaveplayer(function(player)
-	players[player:get_player_name()] = nil
 end)

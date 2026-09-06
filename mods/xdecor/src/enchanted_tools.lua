@@ -42,14 +42,15 @@ for m=1, #materials do
 end
 end
 
--- Register enchantment for bug net
-xdecor.register_enchantable_tool("fireflies:bug_net", {
-	enchants = { "durable" },
-	dig_group = "catchable",
-	bonuses = {
-		uses = BUG_NET_USES_MODIFIER,
-	}
-})
+if minetest.registered_tools["fireflies:bug_net"] then
+	xdecor.register_enchantable_tool("fireflies:bug_net", {
+		enchants = { "durable" },
+		dig_group = "catchable",
+		bonuses = {
+			uses = BUG_NET_USES_MODIFIER,
+		}
+	})
+end
 
 -- Register enchanted steel hoe (more durability)
 if farming.register_hoe then

@@ -19,6 +19,7 @@ The Forgotten could not be spawned.=The Forgotten n'a pas pu apparaître.
 The Forgotten has appeared. Use @1 to fight it.=The Forgotten est apparu. Utilisez @1 pour le combattre.
 The Forgotten is ready to fight.=The Forgotten est prêt à combattre.
 You need the ffa_manager privilege.=Vous avez besoin du privilège ffa_manager.
+You must be connected to set this position.=Vous devez être connecté pour définir cette position.
 Stop the event before changing its positions.=Arretez l'événement avant de changer ses positions.
 @1 set to @2.=@1 défini sur @2.
 Event: @1 | Players: @2 / @3=Événement : @1 | Joueurs : @2 / @3

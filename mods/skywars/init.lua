@@ -12,6 +12,7 @@ local files = {
     "maps",
     "map_editor",
     "player",
+	"inventory_cleanup",
     "death_bound",
     "nodes",
     "items",

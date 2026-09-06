@@ -17,10 +17,8 @@ local regular_loot = {
     {name = "default:sword_steel", chance = 0.40, max = 1},
     {name = "default:sword_bronze", chance = 0.25, max = 1},
     {name = "default:axe_steel", chance = 0.12, max = 1},
-    {name = "ctf_ranged:pistol", chance = 0.25, max = 1},
-    {name = "shooter_crossbow:crossbow", chance = 0.14, max = 1},
-    {name = "shooter_crossbow:arrow_white", chance = 0.30, min = 4, max = 10},
-    {name = "ctf_ranged:ammo", chance = 0.20, min = 2, max = 3},
+    {name = "ctf_ranged:pistol", chance = 0.32, max = 1},
+    {name = "ctf_ranged:ammo", chance = 0.30, min = 2, max = 4},
     {name = "skywars:fireball", chance = 0.15, min = 1, max = 2},
     {name = "throwables:snowball", chance = 0.22, min = 1, max = 2},
 

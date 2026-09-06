@@ -32,7 +32,8 @@ minetest.register_chatcommand("skinsdb_download_skins", {
 		local parts = string.split(param, " ")
 		local start = tonumber(parts[1])
 		local len = tonumber(parts[2])
-		if not (start and len and len > 0) then
+		if not start or not len or start < 1 or len < 1 or len > 1000
+				or start ~= math.floor(start) or len ~= math.floor(len) then
 			return false, "Invalid page number or amount of pages"
 		end
 
@@ -59,7 +60,8 @@ local function fetch_url(url, callback)
 		url = url,
 		user_agent = _ID_
 	}, function(result)
-		if result.succeeded and result.code == 200 then
+		if result.succeeded and result.code == 200
+				and type(result.data) == "string" and #result.data <= 16777216 then
 			return callback(result.data)
 		end
 		core.log("warning", ("%s: Failed to download URL=%s STATUS=%s"):format(
@@ -113,7 +115,8 @@ local function safe_single_skin(skin)
 	end
 
 	local function metadata(value)
-		return tostring(value or ""):gsub("[\r\n]", " ")
+		local cleaned = tostring(value or ""):gsub("[\r\n]", " ")
+		return cleaned:sub(1, 256)
 	end
 	local meta = {
 		metadata(skin.name),

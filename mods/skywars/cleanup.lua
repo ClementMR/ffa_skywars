@@ -298,6 +298,10 @@ core.register_chatcommand("cleanup", {
 	params = "[<time>]",
 	privs = {ffa_manager = true},
 	func = function(name, param)
+		if skywars.cleanup_in_progress then
+			return false, "A map rotation or cleanup is already running."
+		end
+
 		local seconds = param and tonumber(param) or transition_delay
 		core.chat_send_all(core.colorize("#93C5FD", S("[Map] Cleanup requested by server in @1s", seconds)))
 		core.after(seconds, function()

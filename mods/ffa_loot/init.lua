@@ -57,7 +57,7 @@ local mese_loot = {
     {name = "throwables:ender_pearl", chance = 0.12, min = 1, max = 2},
     {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
 
-    {name = "ffa_boss:golden_ticket", chance = 0.005, max = 1},
+    {name = "ffa_boss:golden_ticket", chance = 0.001, max = 1},
 }
 
 local diamond_loot = {

@@ -345,7 +345,7 @@ minetest.register_tool("default:sword_bronze", {
 	description = S("Bronze Sword"),
 	inventory_image = "default_tool_bronzesword.png",
 	tool_capabilities = {
-		full_punch_interval = 0.8,
+		full_punch_interval = 0.7,
 		max_drop_level=1,
 		groupcaps={
 			snappy={times={[1]=2.75, [2]=1.30, [3]=0.375}, uses=25, maxlevel=2},

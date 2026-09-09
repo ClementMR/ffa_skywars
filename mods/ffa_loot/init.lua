@@ -6,8 +6,7 @@ local regular_loot = {
     {name = "skywars:wool_blue", chance = 0.45, min = 4, max = 10},
     {name = "xdecor:baricade", chance = 0.20, min = 1, max = 3},
     {name = "xdecor:cobweb", chance = 0.10, min = 1, max = 3},
-    {name = "default:apple", chance = 0.25, min = 2, max = 4},
-    {name = "farming:bread", chance = 0.05, min = 1, max = 3},
+    {name = "default:apple", chance = 0.40, min = 2, max = 3},
 
     -- Early combat
     {name = "default:sword_steel", chance = 0.40, max = 1},
@@ -31,8 +30,8 @@ local mese_loot = {
     {name = "skywars:wool_blue", chance = 0.60, min = 6, max = 14},
     {name = "xdecor:cobweb", chance = 0.30, min = 2, max = 5},
     {name = "xdecor:baricade", chance = 0.22, min = 1, max = 3},
-    {name = "default:apple", chance = 0.35, min = 3, max = 6},
-    {name = "farming:bread", chance = 0.20, min = 2, max = 5},
+    {name = "default:apple", chance = 0.50, min = 3, max = 6},
+    {name = "farming:bread", chance = 0.35, min = 2, max = 4},
 
     {name = "default:sword_mese", chance = 0.25, max = 1},
     {name = "default:axe_mese", chance = 0.13, max = 1},

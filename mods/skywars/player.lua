@@ -27,11 +27,15 @@ end
 core.register_on_newplayer(give_starter_items)
 
 core.register_on_joinplayer(function(player)
+    core.after(0, skywars.teleport_player, player)
+
+    -- Override the hotbar
+    player:hud_set_hotbar_itemcount(9)
+    player:hud_set_hotbar_image("gui_hotbar_9_slots.png")
+
     if core.is_creative_enabled(player:get_player_name()) then
         return
     end
-
-    core.after(0, skywars.teleport_player, player)
 
     player:hud_set_flags({
         minimap = false,

@@ -31,17 +31,6 @@ core.register_on_joinplayer(function(player)
 		end
 
 		local removed = clean_inventory(current:get_inventory())
-		local armor_inventory = core.get_inventory({
-			type = "detached",
-			name = name .. "_armor",
-		})
-		local armor_removed = clean_inventory(armor_inventory)
-		removed = removed + armor_removed
-
-		if armor_removed > 0 and core.global_exists("armor") then
-			armor:save_armor_inventory(current)
-			armor:set_player_armor(current)
-		end
 		if removed > 0 then
 			core.log("action", "[skywars] Removed " .. removed
 				.. " legacy crossbow item(s) from " .. name)

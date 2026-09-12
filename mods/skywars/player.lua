@@ -27,7 +27,7 @@ end
 core.register_on_newplayer(give_starter_items)
 
 core.register_on_joinplayer(function(player)
-    core.after(0, skywars.teleport_player, player)
+    core.after(0.1, skywars.teleport_player, player)
 
     -- Override the hotbar
     player:hud_set_hotbar_itemcount(9)
@@ -61,12 +61,6 @@ end)
 
 core.register_on_respawnplayer(function(player)
     core.after(0.1, skywars.teleport_player, player)
-
-    if core.check_player_privs(player:get_player_name(), {creative=true}) then
-        return
-    end
-
-    --give_starter_items(player)
 end)
 
 local old_is_protected = core.is_protected

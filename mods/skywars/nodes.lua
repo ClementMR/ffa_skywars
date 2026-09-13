@@ -73,6 +73,7 @@ core.register_node("skywars:leaves", {
 	paramtype = "light",
 	is_ground_content = false,
 	groups = {snappy = 3, leafdecay = 3, flammable = 2, leaves = 1},
+	stack_max = 128,
 	sounds = default.node_sound_leaves_defaults(),
 })
 
@@ -83,6 +84,7 @@ core.register_node("skywars:acacia_leaves", {
 	paramtype = "light",
 	is_ground_content = false,
 	groups = {snappy = 3, leafdecay = 3, flammable = 2, leaves = 1},
+	stack_max = 128,
 	sounds = default.node_sound_leaves_defaults(),
 })
 

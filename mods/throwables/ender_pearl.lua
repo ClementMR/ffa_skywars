@@ -9,7 +9,7 @@ local function clear_destination(player, pos)
 			for z = math.floor(pos.z + box[3] + 0.501), math.floor(pos.z + box[6] + 0.499) do
 				local node = core.get_node_or_nil({x = x, y = y, z = z})
 				local def = node and core.registered_nodes[node.name]
-				if not def or node.name == "ignore" or def.walkable or (def.damage_per_second or 0) > 0 then
+				if not def or node.name == "ignore" then
 					return false
 				end
 			end

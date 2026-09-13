@@ -76,28 +76,3 @@ core.is_protected = function(pos, name)
 
     return old_is_protected(pos, name)
 end
-
-local timer
-core.register_globalstep(function(dtime)
-    timer = (timer or 0) + dtime
-    if timer <= 2 then
-        return
-    end
-    timer = 0
-    for _, player in ipairs(core.get_connected_players()) do
-        local pos = player:get_pos()
-        local node_head = core.get_node({x = pos.x, y = pos.y + 1.625, z = pos.z}).name
-        local ndef = core.registered_nodes[node_head]
-
-        if (ndef.walkable == nil or ndef.walkable == true)
-        and (ndef.collision_box == nil or ndef.collision_box.type == "regular")
-        and (ndef.node_box == nil or ndef.node_box.type == "regular")
-        and (node_head ~= "ignore")
-        and (not core.check_player_privs(player:get_player_name(), {noclip=true})) then
-            local hp = player:get_hp()
-            if hp > 0 then
-                player:set_hp(hp - 4)
-            end
-        end
-    end
-end)

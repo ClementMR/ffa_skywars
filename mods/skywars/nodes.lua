@@ -44,20 +44,6 @@ local groups_to_keep = {
 	"cools_lava"
 }
 
-local function item_exists(item_name)
-    return core.registered_items[item_name] ~= nil
-end
-
-local function apply_special_items()
-    for item_name, settings in pairs(special_items) do
-
-        if item_exists(item_name) then
-            core.override_item(item_name, settings)
-        end
-
-    end
-end
-
 local function add_groups(current_groups)
     local groups = {unbreakable=1}
 
@@ -135,4 +121,27 @@ for _, node_prefix in pairs(protected_mods) do
 	end
 end
 
-apply_special_items()
+local timer
+core.register_globalstep(function(dtime)
+    timer = (timer or 0) + dtime
+    if timer <= 2 then
+        return
+    end
+    timer = 0
+    for _, player in ipairs(core.get_connected_players()) do
+        local pos = player:get_pos()
+        local node_head = core.get_node({x = pos.x, y = pos.y + 1.625, z = pos.z}).name
+        local ndef = core.registered_nodes[node_head]
+
+        if (ndef.walkable == nil or ndef.walkable == true)
+        and (ndef.collision_box == nil or ndef.collision_box.type == "regular")
+        and (ndef.node_box == nil or ndef.node_box.type == "regular")
+        and (node_head ~= "ignore")
+        and (not core.check_player_privs(player:get_player_name(), {noclip=true})) then
+            local hp = player:get_hp()
+            if hp > 0 then
+                player:set_hp(hp - 4)
+            end
+        end
+    end
+end)

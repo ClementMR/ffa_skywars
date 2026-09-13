@@ -48,19 +48,6 @@ function throwables.can_hit(owner, target)
 		and ffa_timers.is_immune(target:get_player_name()))
 end
 
-function throwables.record_hit(owner, target)
-	if core.global_exists("player_stats") then
-		player_stats.record_hit(target, owner)
-	end
-	if core.global_exists("ffa_timers") then
-		for _, player in ipairs({owner, target}) do
-			if not core.is_creative_enabled(player:get_player_name()) then
-				ffa_timers.start_combat(player)
-			end
-		end
-	end
-end
-
 local function valid_target(self, object)
 	if object == self.object or object == self.owner or not object:get_pos()
 			or object:get_hp() <= 0 then

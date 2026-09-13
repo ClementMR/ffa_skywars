@@ -35,9 +35,6 @@ throwables.register_projectile("throwables:thrown_wind_pearl", {
 					local velocity = vector.multiply(direction, strength * (1 - distance / radius))
 					velocity.y = math.max(0, velocity.y) + lift
 					object:add_velocity(velocity)
-					if player and object ~= self.owner then
-						throwables.record_hit(self.owner, object)
-					end
 				end
 			end
 		end

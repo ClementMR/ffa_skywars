@@ -25,9 +25,6 @@ throwables.register_projectile("throwables:thrown_snowball", {
 
 		local direction = vector.normalize({x = self.last_velocity.x, y = 0, z = self.last_velocity.z})
 		target:add_velocity(vector.offset(vector.multiply(direction, knockback), 0, lift, 0))
-		if target:get_hp() > 0 then
-			throwables.record_hit(self.owner, target)
-		end
 	end,
 })
 

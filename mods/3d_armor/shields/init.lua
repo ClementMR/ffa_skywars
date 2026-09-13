@@ -66,7 +66,7 @@ if armor.materials.gold then
 	armor:register_armor("shields:shield_gold", {
 		description = S("Gold Shield"),
 		inventory_image = "shields_inv_shield_gold.png",
-		groups = {armor_shield=1, armor_heal=6, armor_use=1500},
+		groups = {armor_shield=1, armor_heal=4, armor_use=1500},
 		armor_groups = {fleshy=12},
 		damage_groups = {cracky=1, snappy=2, choppy=2, crumbly=3, level=2},
 		reciprocate_damage = true,
@@ -84,7 +84,7 @@ if armor.materials.diamond then
 	armor:register_armor("shields:shield_diamond", {
 		description = S("Diamond Shield"),
 		inventory_image = "shields_inv_shield_diamond.png",
-		groups = {armor_shield=1, armor_heal=10, armor_use=650},
+		groups = {armor_shield=1, armor_heal=7, armor_use=650},
 		armor_groups = {fleshy=14.5},
 		damage_groups = {cracky=2, snappy=1, choppy=1, level=3},
 		reciprocate_damage = true,

@@ -13,7 +13,7 @@ local regular_loot = {
     {name = "default:sword_bronze", chance = 0.25, max = 1},
     {name = "default:axe_steel", chance = 0.12, max = 1},
     {name = "ctf_ranged:pistol", chance = 0.32, max = 1},
-    {name = "ctf_ranged:ammo", chance = 0.30, min = 2, max = 4},
+    {name = "ctf_ranged:ammo", chance = 0.30, min = 1, max = 2},
     {name = "skywars:fireball", chance = 0.15, min = 1, max = 2},
     {name = "throwables:snowball", chance = 0.22, min = 1, max = 2},
 
@@ -36,7 +36,7 @@ local mese_loot = {
     {name = "default:sword_mese", chance = 0.25, max = 1},
     {name = "default:axe_mese", chance = 0.13, max = 1},
     {name = "ctf_ranged:rifle_loaded", chance = 0.18, max = 1},
-    {name = "ctf_ranged:ammo", chance = 0.25, min = 3, max = 6},
+    {name = "ctf_ranged:ammo", chance = 0.25, min = 1, max = 4},
     {name = "fire:flint_and_steel", chance = 0.15, max = 1},
     {name = "tnt:tnt", chance = 0.25, min = 1, max = 3},
 

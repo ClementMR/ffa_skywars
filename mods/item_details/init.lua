@@ -40,15 +40,10 @@ local function armor_slot(groups)
 	end
 end
 
-local function item_info(name, def)
+local function item_info(name)
 	local info = {}
 	for key, value in pairs(special[name] or {}) do
 		info[key] = value
-	end
-	if type(def._item_info) == "table" then
-		for key, value in pairs(def._item_info) do
-			info[key] = value
-		end
 	end
 	return info
 end
@@ -68,7 +63,7 @@ local function build_details(name, def)
 		add_stat(lines, S("Attack cooldown"),
 			S("@1 s", format_number(tool_capabilities.full_punch_interval)), "#F59E0B")
 	end
-	if def._cooldown and not info.fire_rate then
+	if def._cooldown and not def._g_category then
 		add_stat(lines, S("Cooldown"), S("@1 s", format_number(def._cooldown)), "#F59E0B")
 	end
 
@@ -108,9 +103,7 @@ end
 
 core.register_on_mods_loaded(function()
 	for name, def in pairs(core.registered_items) do
-		local consumable_node = food_healing[name] ~= nil
-		local inventory_item = def.type == "tool" or def.type == "craft" or consumable_node
-		if inventory_item and def.description and def.description ~= "" then
+		if def.description and def.description ~= "" then
 			local details = build_details(name, def)
 			if #details > 0 then
 				core.override_item(name, {

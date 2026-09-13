@@ -6,7 +6,7 @@ core.register_tool("skywars:sword_shadow", {
     wield_scale = {x = 1.2, y = 1, z = 1},
     range = 5.0,
     tool_capabilities = {
-        full_punch_interval = 0.7,
+        full_punch_interval = 0.6,
         groupcaps = {
             snappy={times={[1]=1.90, [2]=0.90, [3]=0.30}, uses = 100, maxlevel = 3}
         },

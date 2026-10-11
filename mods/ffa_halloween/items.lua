@@ -21,7 +21,6 @@ core.register_craftitem("ffa_halloween:candy", {
 	inventory_image = "ffa_halloween_candy.png",
 	stack_max = 32,
 	on_use = function(stack, user, pointed_thing)
-		H.sound("candy", {to_player = user:get_player_name(), gain = 0.4})
 		H.burst(user:get_pos(), "ffa_halloween_spark.png", 8)
 
 		return core.do_item_eat(2, nil, stack, user, pointed_thing)

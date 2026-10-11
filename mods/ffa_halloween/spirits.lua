@@ -56,6 +56,9 @@ core.register_entity("ffa_halloween:spirit", {
 	end,
 	on_punch = function(self, player) collect(self, player); return true end,
 	on_rightclick = collect,
+	on_blast = function()
+		return false, false, {}
+	end,
 	on_deactivate = function(self) H.objects[self.object] = nil end,
 })
 

@@ -63,7 +63,7 @@ local function valid_target(self, object)
 end
 
 local function trace(self, from, to)
-	for hit in core.raycast(from, to, true, false, pointabilities) do
+	for hit in core.raycast(from, to, self.def.hit_objects ~= false, false, pointabilities) do
 		local valid
 		if hit.type == "node" then
 			local node = core.get_node_or_nil(hit.under)

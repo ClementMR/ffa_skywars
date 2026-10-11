@@ -1,5 +1,18 @@
 local S = core.get_translator("ffa_loot")
 
+local loot_api = rawget(_G, "ffa_loot") or {}
+rawset(_G, "ffa_loot", loot_api)
+local loot_providers = {}
+
+function loot_api.register_loot_provider(id, callback)
+    assert(type(id) == "string" and type(callback) == "function")
+    loot_providers[id] = callback
+end
+
+function loot_api.unregister_loot_provider(id)
+    loot_providers[id] = nil
+end
+
 local regular_loot = {
     -- Building and survival
     {name = "skywars:leaves", chance = 1.00, min = 12, max = 20},
@@ -91,7 +104,7 @@ local REGULAR_CHEST = 30
 local MESE_CHEST = 60
 local DIAMOND_CHEST = 15
 
-local function fill_chest_random(pos, loot)
+local function fill_chest_random(pos, loot, tier)
     local meta = core.get_meta(pos)
     local inv = meta:get_inventory()
     local size = inv:get_size("main")
@@ -106,8 +119,28 @@ local function fill_chest_random(pos, loot)
         empty_slots[slot] = slot
     end
 
-    local available_slots = size
+    local rolls = {}
     for _, item in ipairs(loot) do
+        rolls[#rolls + 1] = item
+    end
+    local provider_ids = {}
+    for id in pairs(loot_providers) do
+        provider_ids[#provider_ids + 1] = id
+    end
+    table.sort(provider_ids)
+    for _, id in ipairs(provider_ids) do
+        local ok, extra = pcall(loot_providers[id], pos, tier)
+        if ok and type(extra) == "table" then
+            for _, item in ipairs(extra) do
+                rolls[#rolls + 1] = item
+            end
+        elseif not ok then
+            core.log("warning", "[ffa_loot] Provider " .. id .. ": " .. tostring(extra))
+        end
+    end
+
+    local available_slots = size
+    for _, item in ipairs(rolls) do
         if available_slots == 0 then
             break
         end
@@ -127,7 +160,7 @@ local function fill_chest_random(pos, loot)
     end
 end
 
-local function update_node(pos, refill_time, node_infotext, loot)
+local function update_node(pos, refill_time, node_infotext, loot, tier)
     local meta = core.get_meta(pos)
     local timer = meta:get_int("timer")
     local time_left = (refill_time - timer)
@@ -136,7 +169,7 @@ local function update_node(pos, refill_time, node_infotext, loot)
     meta:set_string("infotext", S("@1, will be full in @2s", node_infotext, time_left))
 
     if time_left <= 0 then
-        fill_chest_random(pos, loot)
+        fill_chest_random(pos, loot, tier)
     end
 
     -- Reset node timer
@@ -229,7 +262,7 @@ register_basic_chest("ffa_loot:regular_chest", {
         "default_chest_inside.png"
 	},
     on_timer = function(pos, elapsed)
-        update_node(pos, REGULAR_CHEST, S("Regular Chest"), regular_loot)
+        update_node(pos, REGULAR_CHEST, S("Regular Chest"), regular_loot, "regular")
         return true
     end
 })
@@ -249,7 +282,7 @@ register_basic_chest("ffa_loot:mese_chest", {
         "default_chest_inside.png"
 	},
     on_timer = function(pos, elapsed)
-        update_node(pos, MESE_CHEST, S("Mese Chest"), mese_loot)
+        update_node(pos, MESE_CHEST, S("Mese Chest"), mese_loot, "mese")
         return true
     end
 })
@@ -269,7 +302,7 @@ end)
 
 local function chest_opened(pos)
     local meta = core.get_meta(pos)
-    return meta:get_int("timer") ~= 0
+    return meta:get_float("timer") > 0
 end
 
 local function has_key(clicker, pos)
@@ -289,16 +322,18 @@ local function remove_key(clicker)
     end
 end
 
-local function update_diamond_chest(pos, closing_time)
+local function update_diamond_chest(pos, elapsed)
     local meta = core.get_meta(pos)
-    local timer = meta:get_int("timer")
+    local time_left = math.max(0, meta:get_float("timer") - elapsed)
 
-    meta:set_int("timer", timer - 1)
-    meta:set_string("infotext", S("@1, Closing in @2s", S("Diamond Chest"), timer - 1))
+    meta:set_float("timer", time_left)
 
-    if (timer -1) == 0 then
+    if time_left <= 0 then
         meta:set_string("infotext", S("Diamond Chest"))
-        core.swap_node(pos, {name = "ffa_loot:diamond_chest", param2 = core.get_node(pos).param2 })
+        local node = core.get_node(pos)
+        node.name = node.name:sub(1, -6)
+        core.swap_node(pos, node)
+        core.get_node_timer(pos):stop()
 
         for name, opened_pos in pairs(diamond_chest_opened) do
             if vector.equals(opened_pos, pos) then
@@ -307,6 +342,29 @@ local function update_diamond_chest(pos, closing_time)
                 diamond_chest_opened[name] = nil
             end
         end
+        return false
+    end
+
+    meta:set_string("infotext", S("@1, Closing in @2s", S("Diamond Chest"), math.ceil(time_left)))
+    return true
+end
+
+local function repair_diamond_chest(pos, node)
+    local meta = core.get_meta(pos)
+    local inv = meta:get_inventory()
+    -- Schematics and bulk map imports do not call on_construct.
+    if inv:get_size("main") == 0 then
+        inv:set_size("main", 8*4)
+    end
+
+    if node.name:sub(-5) == "_open" then
+        if update_diamond_chest(pos, 0) and not core.get_node_timer(pos):is_started() then
+            core.get_node_timer(pos):start(1)
+        end
+    else
+        meta:set_int("timer", 0)
+        meta:set_string("infotext", S("Diamond Chest"))
+        core.get_node_timer(pos):stop()
     end
 end
 
@@ -329,16 +387,15 @@ local function register_diamond_chest(nodename, d)
     end
 
     def.on_timer = function(pos, elapsed)
-        local is_opened = chest_opened(pos)
-        if is_opened then
-            update_diamond_chest(pos, DIAMOND_CHEST)
+        if core.get_node(pos).name:sub(-5) ~= "_open" then
+            repair_diamond_chest(pos, core.get_node(pos))
+            return false
         end
-
-        return true
+        return update_diamond_chest(pos, elapsed)
     end
 
     def.on_blast = function() end
-    def.groups = { unbreakable = 1 }
+    def.groups = { unbreakable = 1, ffa_loot_diamond_chest = 1 }
     def.sounds = default.node_sound_wood_defaults()
 
 	default.set_inventory_action_loggers(def, "ffa_loot")
@@ -347,6 +404,10 @@ local function register_diamond_chest(nodename, d)
 	local def_closed = table.copy(def)
 
     def_opened.on_rightclick = function(pos, node, clicker)
+        repair_diamond_chest(pos, node)
+        if not chest_opened(pos) then
+            return def_closed.on_rightclick(pos, core.get_node(pos), clicker)
+        end
         local cn = clicker:get_player_name()
         core.show_formspec(cn, "ffa_loot:diamond_chest", default.chest.get_chest_formspec(pos))
 
@@ -369,19 +430,22 @@ local function register_diamond_chest(nodename, d)
 	}
 
     def_closed.on_rightclick = function(pos, node, clicker)
+        repair_diamond_chest(pos, node)
         local cn = clicker:get_player_name()
         local meta = core.get_meta(pos)
         local is_opened = chest_opened(pos)
 
         if not is_opened and has_key(clicker, pos) then
             core.after(0, remove_key, clicker)
-            fill_chest_random(pos, diamond_loot)
+            fill_chest_random(pos, diamond_loot, "diamond")
             meta:set_int("timer", DIAMOND_CHEST)
+            meta:set_string("infotext", S("@1, Closing in @2s", S("Diamond Chest"), DIAMOND_CHEST))
 
             core.chat_send_all(S("@1 has opened a @2", cn, core.colorize("#12e8ec", S("Diamond Chest"))))
 
             core.sound_play("ffa_loot_unlock", {gain = 0.3, pos = pos, max_hear_distance = 10}, true)
             core.swap_node(pos, {name = "ffa_loot:diamond_chest_open", param2 = node.param2 })
+            core.get_node_timer(pos):start(1)
             core.show_formspec(cn, "ffa_loot:diamond_chest", default.chest.get_chest_formspec(pos))
 
             diamond_chest_opened[cn] = pos
@@ -410,6 +474,14 @@ register_diamond_chest("ffa_loot:diamond_chest", {
         "default_chest_front.png^[colorize:#12e8ec:100",
         "default_chest_inside.png"
 	}
+})
+
+core.register_lbm({
+    label = "Repair diamond chest timers and metadata",
+    name = "ffa_loot:repair_diamond_chests",
+    nodenames = {"group:ffa_loot_diamond_chest"},
+    run_at_every_load = true,
+    action = repair_diamond_chest,
 })
 
 core.register_craftitem("ffa_loot:diamond_key", {

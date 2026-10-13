@@ -6,17 +6,16 @@ function timers.start_combat(player)
 end
 
 core.register_on_player_hpchange(function(player, hp_change, reason)
-    if hp_change >= 0 or reason.type ~= "punch" or not reason.object
+    if hp_change >= 0 or not reason.object
             or not reason.object:is_player() then
-        return hp_change
+        return
     end
 
     local name = player:get_player_name()
     if reason.object:get_player_name() ~= name and not core.is_creative_enabled(name) then
         timers.start_combat(player)
     end
-    return hp_change
-end, true)
+end)
 
 local function drop_armor(player)
     local name, inventory = armor:get_valid_player(player, "[on_leaveplayer]")

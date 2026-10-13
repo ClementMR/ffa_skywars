@@ -4,7 +4,7 @@ return function(stats)
 	local last_attackers = {}
 
 	local function is_competitive_player(player)
-		return player and player:is_player() and not core.is_creative_enabled(player:get_player_name())
+		return player and player:is_player()
 	end
 
 	core.register_on_joinplayer(function(player)
@@ -35,7 +35,7 @@ return function(stats)
 	end
 
 	core.register_on_player_hpchange(function(player, change, reason)
-		if change < 0 and reason.type == "punch" then
+		if change < 0 then
 			stats.api.record_hit(player, reason.object)
 		end
 	end)

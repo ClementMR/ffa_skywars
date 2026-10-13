@@ -172,7 +172,8 @@ local function calc_velocity(pos1, pos2, old_vel, power)
 	return vel
 end
 
-local function entity_physics(pos, radius, drops, in_water)
+local function entity_physics(pos, radius, drops, in_water, owner)
+	local hitter = minetest.get_player_by_name(owner)
 	local objs = get_objects_inside_radius(pos, radius)
 	for _, obj in pairs(objs) do
 		local obj_pos = obj:get_pos()
@@ -189,7 +190,7 @@ local function entity_physics(pos, radius, drops, in_water)
 				if hp < 0 then
 					hp = 0
 				end
-				obj:set_hp(hp)
+				obj:set_hp(hp, {type = "set_hp", object = hitter})
 			end
 		elseif obj:get_attach() then
 			-- Attached entities are visual extensions of their parent. Applying
@@ -351,7 +352,7 @@ function tnt.boom(pos, def, owner, in_water)
 			def1.ignore_on_blast, owner, def1.explode_center, in_water)
 	-- append entity drops
 	local damage_radius = (radius / max(1, def1.radius)) * def1.damage_radius
-	entity_physics(pos, damage_radius, drops, in_water)
+	entity_physics(pos, damage_radius, drops, in_water, owner)
 	if not def1.disable_drops then
 		eject_drops(drops, pos, radius)
 	end

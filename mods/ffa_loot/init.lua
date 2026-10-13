@@ -15,7 +15,7 @@ end
 
 local regular_loot = {
     -- Building and survival
-    {name = "skywars:leaves", chance = 1.00, min = 12, max = 20},
+    {name = "skywars:wool_red", chance = 0.45, min = 6, max = 12},
     {name = "skywars:wool_blue", chance = 0.45, min = 4, max = 10},
     {name = "xdecor:baricade", chance = 0.20, min = 1, max = 3},
     {name = "xdecor:cobweb", chance = 0.10, min = 1, max = 3},
@@ -39,7 +39,7 @@ local regular_loot = {
 }
 
 local mese_loot = {
-    {name = "skywars:acacia_leaves", chance = 1.00, min = 12, max = 20},
+    {name = "skywars:wool_red", chance = 0.50, min = 10, max = 14},
     {name = "skywars:wool_blue", chance = 0.60, min = 6, max = 14},
     {name = "xdecor:cobweb", chance = 0.30, min = 2, max = 5},
     {name = "xdecor:baricade", chance = 0.22, min = 1, max = 3},

@@ -11,7 +11,8 @@ skywars.whitelist = {
     "xdecor:cobweb",
 	"default:apple",
 	"maptools:superapple",
-	"skywars:wool_blue"
+	"skywars:wool_blue",
+	"skywars:wool_red"
 }
 
 local protected_mods = {
@@ -92,7 +93,17 @@ minetest.register_node("skywars:wool_blue", {
 	description = core.registered_nodes["wool:blue"].description,
 	tiles = {"wool_blue.png"},
 	is_ground_content = false,
-	groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3, wool = 1},
+	groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3, wool = 1, ctf_ranged = 1},
+	stack_max = 128,
+	sounds = default.node_sound_defaults(),
+})
+
+minetest.register_node("skywars:wool_red", {
+	description = core.registered_nodes["wool:red"].description,
+	tiles = {"wool_red.png"},
+	is_ground_content = false,
+	groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3, wool = 1, ctf_ranged = 1},
+	stack_max = 128,
 	sounds = default.node_sound_defaults(),
 })
 

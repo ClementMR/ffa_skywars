@@ -46,3 +46,5 @@ core.hud_replace_builtin("breath", {
 
 core.register_alias_force("wind_pearl:wind_pearl", "throwables:wind_pearl")
 core.register_alias_force("enderpearl:ender_pearl", "throwables:ender_pearl")
+core.register_alias_force("skywars:leaves", "skywars:wool_blue")
+core.register_alias_force("skywars:acacia_leaves", "skywars:wool_red")

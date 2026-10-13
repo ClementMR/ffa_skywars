@@ -126,7 +126,7 @@ local function process_ray(ray, user, look_dir, def, hits)
 			local node = core.get_node(hitpoint.under)
 			local nodedef = core.registered_nodes[node.name]
 
-			if nodedef.on_ranged_shoot or nodedef.groups.leaves then
+			if nodedef.on_ranged_shoot or nodedef.groups.ctf_ranged then
 				if not core.is_protected(hitpoint.under, user:get_player_name()) then
 					if nodedef.on_ranged_shoot then
 						nodedef.on_ranged_shoot(hitpoint.under, node, user, def.type)

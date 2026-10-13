@@ -1,5 +1,6 @@
 local H = ffa_halloween
 local flights = {}
+local landings = {}
 local pose = {
 	Body = {x = -math.pi / 2, y = math.pi, z = 0},
 	Head = {x = math.pi / 2, y = 0, z = 0},
@@ -15,6 +16,8 @@ function H.stop_broom_flight(player)
 	local flight = flights[name]
 	if not flight then return end
 	flights[name] = nil
+	-- Fall reports may arrive just after the server detects the landing.
+	landings[name] = core.get_us_time() / 1000000 + 1
 	if flight.overrides then
 		for bone in pairs(pose) do
 			player:set_bone_override(bone, flight.overrides[bone])
@@ -27,6 +30,7 @@ function H.start_broom_flight(player)
 	if player:get_attach() then return end
 	local name = player:get_player_name()
 	if flights[name] then return end
+	landings[name] = nil
 	flights[name] = {
 		player = player, mesh = player:get_properties().mesh,
 		started = core.get_us_time() / 1000000,
@@ -65,5 +69,19 @@ core.register_globalstep(function(dt)
 	end
 end)
 
-core.register_on_dieplayer(H.stop_broom_flight)
-core.register_on_leaveplayer(H.stop_broom_flight)
+core.register_on_player_hpchange(function(player, change, reason)
+	local name = player:get_player_name()
+	if change < 0 and reason.type == "fall" and (flights[name]
+			or (landings[name] or 0) > core.get_us_time() / 1000000) then
+		return 0, true
+	end
+	return change
+end, true)
+
+local function clear_flight(player)
+	H.stop_broom_flight(player)
+	landings[player:get_player_name()] = nil
+end
+
+core.register_on_dieplayer(clear_flight)
+core.register_on_leaveplayer(clear_flight)

@@ -82,6 +82,12 @@ enable_fire (Enable Fire) bool true
 # Enable flame sound.
 flame_sound (Flame Sound) bool true
 
+[Halloween SkyWars]
+
+# Halloween is enabled only with /halloween on and disabled with /halloween off.
+ffa_halloween_fog_distance (Halloween fog distance [nodes]) int 75 16 300
+ffa_halloween_max_objects (Maximum ghosts and floating lanterns) int 16 0 128
+
 [Player's Stats]
 # The in-memory cache is flushed on logout and shutdown as well as at this interval.
 player_stats_save_interval (Statistics save interval) int 60 30 3600

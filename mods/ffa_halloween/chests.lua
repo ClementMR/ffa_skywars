@@ -3,7 +3,6 @@ local H = ffa_halloween
 local to_theme, to_original, tracked, names = {}, {}, {}, {}
 local scan_index = 0
 local restoring = false
-local waiting_for_cleanup = false
 local saved = core.deserialize(H.storage:get_string("themed_chests"))
 if type(saved) == "table" then
 	for key, pos in pairs(saved) do
@@ -18,18 +17,7 @@ local function remember(key, pos)
 	H.storage:set_string("themed_chests", core.serialize(tracked))
 end
 
-function H.pending_restores()
-	local count = 0
-	for _, pos in pairs(tracked) do
-		if not H.active then count = count + 1 end
-	end
-	return count
-end
-
 function H.skin_chest(pos)
-	-- SkyWars writes a whole VoxelManip snapshot at the end of cleanup. A
-	-- concurrent swap could be overwritten after its undo journal was cleared.
-	if skywars.cleanup_in_progress then return end
 	local node = core.get_node_or_nil(pos)
 	if not node or node.name == "ignore" then return end
 	local key = core.pos_to_string(pos)
@@ -50,21 +38,10 @@ function H.skin_chest(pos)
 			open.swap = themed and (to_theme[base] or base) or base
 		end
 	end
-	if not themed then H.clean_inventory(core.get_meta(pos):get_inventory()) end
 end
 
 function H.restore_chests()
 	if H.active then return end
-	if skywars.cleanup_in_progress then
-		if not waiting_for_cleanup then
-			waiting_for_cleanup = true
-			core.after(0.5, function()
-				waiting_for_cleanup = false
-				H.restore_chests()
-			end)
-		end
-		return
-	end
 	local positions = {}
 	for _, pos in pairs(tracked) do positions[#positions + 1] = pos end
 	for _, pos in ipairs(positions) do H.skin_chest(pos) end
@@ -75,22 +52,17 @@ function H.restore_chests()
 	end
 	if #queue == 0 then return end
 	restoring = true
-	local blocked_by_cleanup = false
 	local index = 0
 	local function step()
 		index = index + 1
 		local pos = queue[index]
 		if not pos then
 			restoring = false
-			if blocked_by_cleanup and not H.active then
-				core.after(0, H.restore_chests)
-			end
 			return
 		end
 		-- Emerge only the recorded chest block, never a complete 200x200 map.
 		core.emerge_area(pos, pos, function(_, _, remaining)
 			if remaining ~= 0 then return end
-			if skywars.cleanup_in_progress then blocked_by_cleanup = true end
 			H.skin_chest(pos)
 			core.after(0.1, step)
 		end)
@@ -126,7 +98,7 @@ for _, tier in ipairs({"regular", "mese", "diamond"}) do
 			local result = old.on_rightclick(pos, {name = original, param1 = node.param1, param2 = node.param2},
 				player, stack, pointed)
 			H.skin_chest(pos)
-			if H.active then H.sound("chest", {to_player = player:get_player_name(), gain = 0.2}) end
+
 			return result
 		end
 		def.on_timer = function(pos, elapsed)
@@ -159,7 +131,7 @@ core.register_on_mods_loaded(function()
 end)
 
 function H.scan_environment(players)
-	if #players == 0 or skywars.cleanup_in_progress then return end
+	if #players == 0 then return end
 	scan_index = scan_index % #players + 1
 	local player = players[scan_index]
 	local pos = vector.round(player:get_pos())

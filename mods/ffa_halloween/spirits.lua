@@ -11,10 +11,9 @@ local function collect(self, player)
 	if self.kind ~= "ghost" or self.collected or not H.active
 			or not player or not player:is_player()
 			or vector.distance(self.object:get_pos(), player:get_pos()) > 4 then return end
-	local item = "ffa_halloween:candy"
 	local inventory = player:get_inventory()
-	if not inventory:room_for_item("main", item) then return end
-	inventory:add_item("main", item)
+	if not inventory:room_for_item("main", "ffa_halloween:candy") then return end
+	inventory:add_item("main", "ffa_halloween:candy")
 	self.collected = true
 	H.burst(self.object:get_pos(), "ffa_halloween_spark.png", 14)
 	self.object:remove()

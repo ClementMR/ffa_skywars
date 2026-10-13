@@ -1,6 +1,5 @@
 # textdomain: skywars
 
-Fireball=
 Shadow Sword=
 You must defeat the @1 to open this chest!=
 The @1 was beaten by @2!=

@@ -3,3 +3,4 @@
 Wind Pearl=
 Ender Pearl=
 Snowball=
+Fireball=

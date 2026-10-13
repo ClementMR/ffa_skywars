@@ -17,7 +17,6 @@ local files = {
     "death_bound",
     "nodes",
     "items",
-    "fireball",
     "totem",
     "cleanup",
     "vanish",

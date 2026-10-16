@@ -1,18 +1,5 @@
 local S = core.get_translator("ffa_loot")
 
-local loot_api = rawget(_G, "ffa_loot") or {}
-rawset(_G, "ffa_loot", loot_api)
-local loot_providers = {}
-
-function loot_api.register_loot_provider(id, callback)
-    assert(type(id) == "string" and type(callback) == "function")
-    loot_providers[id] = callback
-end
-
-function loot_api.unregister_loot_provider(id)
-    loot_providers[id] = nil
-end
-
 local regular_loot = {
     -- Building and survival
     {name = "skywars:wool_red", chance = 0.45, min = 6, max = 12},
@@ -36,6 +23,9 @@ local regular_loot = {
     {name = "3d_armor:leggings_steel", chance = 0.10, max = 1},
     {name = "3d_armor:boots_steel", chance = 0.16, max = 1},
     {name = "shields:shield_steel", chance = 0.18, max = 1},
+
+    -- Halloween
+    {name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
 }
 
 local mese_loot = {
@@ -68,8 +58,11 @@ local mese_loot = {
     {name = "throwables:wind_pearl", chance = 0.25, min = 1, max = 2},
     {name = "throwables:ender_pearl", chance = 0.12, min = 1, max = 2},
     {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
-
     {name = "ffa_boss:golden_ticket", chance = 0.001, max = 1},
+
+    -- Halloween
+    {name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
+    {name = "ffa_halloween:broom", chance = 0.10, max = 1},
 }
 
 local diamond_loot = {
@@ -98,49 +91,30 @@ local diamond_loot = {
     {name = "3d_armor:chestplate_shadow", chance = 0.008, max = 1},
     {name = "3d_armor:leggings_shadow", chance = 0.008, max = 1},
     {name = "3d_armor:boots_shadow", chance = 0.012, max = 1},
+
+    -- Halloween
+    {name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
+    {name = "ffa_halloween:broom", chance = 0.25, max = 2},
+    {name = "ffa_halloween:helmet_pumpkin", chance = 0.50, max = 1},
 }
 
 local REGULAR_CHEST = 30
 local MESE_CHEST = 60
 local DIAMOND_CHEST = 15
 
-local function fill_chest_random(pos, loot, tier)
+local function fill_chest_random(pos, loot)
     local meta = core.get_meta(pos)
     local inv = meta:get_inventory()
     local size = inv:get_size("main")
     inv:set_list("main", {})
 
-    -- Pick an unused inventory slot for every successful roll. The previous
-    -- implementation selected a slot independently and could overwrite an
-    -- earlier reward, which made both the real drop count and the advertised
-    -- probabilities unreliable.
     local empty_slots = {}
     for slot = 1, size do
         empty_slots[slot] = slot
     end
 
-    local rolls = {}
-    for _, item in ipairs(loot) do
-        rolls[#rolls + 1] = item
-    end
-    local provider_ids = {}
-    for id in pairs(loot_providers) do
-        provider_ids[#provider_ids + 1] = id
-    end
-    table.sort(provider_ids)
-    for _, id in ipairs(provider_ids) do
-        local ok, extra = pcall(loot_providers[id], pos, tier)
-        if ok and type(extra) == "table" then
-            for _, item in ipairs(extra) do
-                rolls[#rolls + 1] = item
-            end
-        elseif not ok then
-            core.log("warning", "[ffa_loot] Provider " .. id .. ": " .. tostring(extra))
-        end
-    end
-
     local available_slots = size
-    for _, item in ipairs(rolls) do
+    for _, item in ipairs(loot) do
         if available_slots == 0 then
             break
         end
@@ -160,7 +134,7 @@ local function fill_chest_random(pos, loot, tier)
     end
 end
 
-local function update_node(pos, refill_time, node_infotext, loot, tier)
+local function update_node(pos, refill_time, node_infotext, loot)
     local meta = core.get_meta(pos)
     local timer = meta:get_int("timer")
     local time_left = (refill_time - timer)
@@ -169,7 +143,7 @@ local function update_node(pos, refill_time, node_infotext, loot, tier)
     meta:set_string("infotext", S("@1, will be full in @2s", node_infotext, time_left))
 
     if time_left <= 0 then
-        fill_chest_random(pos, loot, tier)
+        fill_chest_random(pos, loot)
     end
 
     -- Reset node timer
@@ -262,7 +236,7 @@ register_basic_chest("ffa_loot:regular_chest", {
         "default_chest_inside.png"
 	},
     on_timer = function(pos, elapsed)
-        update_node(pos, REGULAR_CHEST, S("Regular Chest"), regular_loot, "regular")
+        update_node(pos, REGULAR_CHEST, S("Regular Chest"), regular_loot)
         return true
     end
 })
@@ -282,7 +256,7 @@ register_basic_chest("ffa_loot:mese_chest", {
         "default_chest_inside.png"
 	},
     on_timer = function(pos, elapsed)
-        update_node(pos, MESE_CHEST, S("Mese Chest"), mese_loot, "mese")
+        update_node(pos, MESE_CHEST, S("Mese Chest"), mese_loot)
         return true
     end
 })

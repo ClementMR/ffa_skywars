@@ -85,7 +85,6 @@ flame_sound (Flame Sound) bool true
 [Halloween SkyWars]
 
 # Halloween is enabled only with /halloween on and disabled with /halloween off.
-ffa_halloween_fog_distance (Halloween fog distance [nodes]) int 75 16 300
 ffa_halloween_max_objects (Maximum ghosts and floating lanterns) int 16 0 128
 
 [Player's Stats]

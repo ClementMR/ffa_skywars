@@ -34,17 +34,6 @@ core.register_chatcommand("halloween", {
 	end,
 })
 
-ffa_loot.register_loot_provider("ffa_halloween", function(pos, tier)
-	if not H.active then return {} end
-	H.skin_chest(pos)
-	local chance = tier == "diamond" and 1 or tier == "mese" and 0.7 or 0.35
-	return {
-		{name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
-		{name = "ffa_halloween:broom", chance = 0.15, max = 2},
-		{name = "ffa_halloween:helmet_pumpkin", chance = 0.50, max = 1},
-	}
-end)
-
 local environment_timer, spirit_timer = 0, 0
 core.register_globalstep(function(dt)
 	if not H.active then return end

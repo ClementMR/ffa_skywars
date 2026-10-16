@@ -5,8 +5,8 @@ if enable_tnt == nil then
 end
 
 local tnt_entity_velocity_mul = tonumber(minetest.settings:get("tnt_revamped.tnt_entity_velocity_mul")) or 2
-local player_velocity_mul = tonumber(minetest.settings:get("tnt_revamped.player_velocity_mul")) or 10
-local entity_velocity_mul = tonumber(minetest.settings:get("tnt_revamped.entity_velocity_mul")) or 10
+local player_velocity_mul = tonumber(minetest.settings:get("tnt_revamped.player_velocity_mul")) or 2.5
+local entity_velocity_mul = tonumber(minetest.settings:get("tnt_revamped.entity_velocity_mul")) or 2.5
 local tnt_damage_nodes = minetest.settings:get_bool("tnt_revamped.damage_nodes") or false
 local tnt_damage_entities = minetest.settings:get_bool("tnt_revamped.damage_entities") or false
 local registered_nodes = minetest.registered_nodes

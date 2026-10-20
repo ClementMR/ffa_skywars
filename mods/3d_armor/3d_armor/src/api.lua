@@ -815,12 +815,14 @@ armor.get_armor_formspec = function(self, name)
 	local _, inv = self:get_valid_player(player, "[get_armor_formspec]")
 
 	local slot_bg = ""
-    for i = 1, #armor.elements-1 do
-		local itemstack = inv:get_stack("armor", i)
-        if itemstack and itemstack:is_empty() then
-            slot_bg = slot_bg .. "image[0," .. (i - 1) .. ";1,1;3d_armor_stand_" .. armor.elements[i] .. ".png]"
-        end
-    end
+	if inv then
+		for i = 1, #armor.elements-1 do
+			local itemstack = inv:get_stack("armor", i)
+			if itemstack and itemstack:is_empty() then
+				slot_bg = slot_bg .. "image[0," .. (i - 1) .. ";1,1;3d_armor_stand_" .. armor.elements[i] .. ".png]"
+			end
+		end
+	end
 
     local form = {
         "list[detached:" .. name .. "_armor;armor;0,0;1,5;]",

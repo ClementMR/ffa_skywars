@@ -811,25 +811,26 @@ end
 --  @tparam[opt] bool listring Use `listring` formspec element (default: `false`).
 --  @treturn string Formspec formatted string.
 armor.get_armor_formspec = function(self, name)
-    local armor_slot_imgs = ""
     local player = core.get_player_by_name(name)
+	local _, inv = self:get_valid_player(player, "[get_armor_formspec]")
 
-    for a = 1, #armor.elements-1 do
-        if player:get_inventory():get_stack("armor", a):is_empty() then
-            armor_slot_imgs = armor_slot_imgs ..
-                "image[0," .. (a - 1) .. ";1,1;3d_armor_stand_" ..
-                armor.elements[a] .. ".png]"
+	local slot_bg = ""
+    for i = 1, #armor.elements-1 do
+		local itemstack = inv:get_stack("armor", i)
+        if itemstack and itemstack:is_empty() then
+            slot_bg = slot_bg .. "image[0," .. (i - 1) .. ";1,1;3d_armor_stand_" .. armor.elements[i] .. ".png]"
         end
     end
 
-    local form =
-        "list[detached:" .. name .. "_armor;armor;0,0;1,5;]" ..
-        "listring[detached:" .. name .. "_armor;armor]" ..
-        "listring[current_player;main]" ..
-        default.gui_slots ..
-        armor_slot_imgs
+    local form = {
+        "list[detached:" .. name .. "_armor;armor;0,0;1,5;]",
+        "listring[detached:" .. name .. "_armor;armor]",
+        "listring[current_player;main]",
+        default.gui_slots,
+        slot_bg
+	}
 
-    return form
+    return table.concat(form, " ")
 end
 
 --- Retrieves element.

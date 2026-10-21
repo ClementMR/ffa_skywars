@@ -1,6 +1,6 @@
 local starter_list = {
     "default:sword_steel",
-    "skywars:leaves 8",
+    "skywars:wool_blue 8",
 }
 
 function skywars.teleport_player(player)

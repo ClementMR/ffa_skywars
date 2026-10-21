@@ -1,4 +1,4 @@
-local GOLDEN_APPLE_ABSORPTION = 4
+local GOLDEN_APPLE_ABSORPTION = 6
 local ABSORPTION_HUD = "skywars:absorption"
 
 local S = core.get_translator(core.get_current_modname())

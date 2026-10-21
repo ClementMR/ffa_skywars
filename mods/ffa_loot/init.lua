@@ -58,11 +58,11 @@ local mese_loot = {
     {name = "throwables:wind_pearl", chance = 0.25, min = 1, max = 2},
     {name = "throwables:ender_pearl", chance = 0.12, min = 1, max = 2},
     {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
-    {name = "ffa_boss:golden_ticket", chance = 0.001, max = 1},
+    {name = "ffa_boss:golden_ticket", chance = 0.01, max = 1},
 
     -- Halloween
     {name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
-    {name = "ffa_halloween:broom", chance = 0.10, max = 1},
+    {name = "ffa_halloween:broom", chance = 0.20, max = 1},
 }
 
 local diamond_loot = {

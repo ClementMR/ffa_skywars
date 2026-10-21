@@ -3,8 +3,6 @@ local S = core.get_translator(core.get_current_modname())
 local special_items = {}
 
 skywars.whitelist = {
-    "skywars:leaves",
-    "skywars:acacia_leaves",
     "tnt:tnt",
     "fire:basic_flame",
     "xdecor:baricade",
@@ -67,6 +65,7 @@ local function is_whitelisted(node_name)
 	return false
 end
 
+--[[
 core.register_node("skywars:leaves", {
 	description = core.registered_nodes["default:leaves"].description,
 	drawtype = "allfaces_optional",
@@ -88,6 +87,7 @@ core.register_node("skywars:acacia_leaves", {
 	stack_max = 128,
 	sounds = default.node_sound_leaves_defaults(),
 })
+]]
 
 minetest.register_node("skywars:wool_blue", {
 	description = core.registered_nodes["wool:blue"].description,

@@ -808,31 +808,32 @@ end
 --
 --  @function armor:get_armor_formspec
 --  @tparam string name Player name.
---  @tparam[opt] bool listring Use `listring` formspec element (default: `false`).
---  @treturn string Formspec formatted string.
+--  @treturn string Formspec formatted string, or empty while armor is initializing.
 armor.get_armor_formspec = function(self, name)
-    local player = core.get_player_by_name(name)
-	local _, inv = self:get_valid_player(player, "[get_armor_formspec]")
+	-- sfinv can request the formspec before the armor join callback has run.
+	-- The armor update callback refreshes it once the inventory is ready.
+	local inv = core.get_inventory({type = "detached", name = name .. "_armor"})
+	if not inv then
+		return ""
+	end
 
 	local slot_bg = ""
-	if inv then
-		for i = 1, #armor.elements-1 do
-			local itemstack = inv:get_stack("armor", i)
-			if itemstack and itemstack:is_empty() then
-				slot_bg = slot_bg .. "image[0," .. (i - 1) .. ";1,1;3d_armor_stand_" .. armor.elements[i] .. ".png]"
-			end
+	for i = 1, #self.elements-1 do
+		local itemstack = inv:get_stack("armor", i)
+		if itemstack and itemstack:is_empty() then
+			slot_bg = slot_bg .. "image[0," .. (i - 1) .. ";1,1;3d_armor_stand_" .. self.elements[i] .. ".png]"
 		end
 	end
 
-    local form = {
-        "list[detached:" .. name .. "_armor;armor;0,0;1,5;]",
-        "listring[detached:" .. name .. "_armor;armor]",
-        "listring[current_player;main]",
-        default.gui_slots,
-        slot_bg
+	local form = {
+		"list[detached:" .. name .. "_armor;armor;0,0;1,5;]",
+		"listring[detached:" .. name .. "_armor;armor]",
+		"listring[current_player;main]",
+		default.gui_slots,
+		slot_bg
 	}
 
-    return table.concat(form, " ")
+	return table.concat(form, " ")
 end
 
 --- Retrieves element.

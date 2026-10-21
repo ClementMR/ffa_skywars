@@ -172,63 +172,75 @@ local function calc_velocity(pos1, pos2, old_vel, power)
 	return vel
 end
 
+local function apply_entity_physics(obj, pos, radius, drops, in_water, hitter)
+	local obj_pos = obj:get_pos()
+	-- Removed objects can remain in the radius query until the engine cleans up.
+	if not obj_pos then
+		return
+	end
+	local luaobj = obj:get_luaentity()
+	local dist = max(1, distance(pos, obj_pos))
+
+	local damage = (4 / dist) * radius
+	if obj:is_player() then
+		local obj_vel = obj:get_velocity()
+		obj:add_velocity(calc_velocity(pos, obj_pos,
+				obj_vel, radius * player_velocity_mul))
+
+		if not in_water or (in_water and tnt_damage_entities) then
+			local hp = obj:get_hp() - damage
+			if hp < 0 then
+				hp = 0
+			end
+			obj:set_hp(hp, {type = "set_hp", object = hitter})
+		end
+	elseif obj:get_attach() then
+		-- Attached entities are visual extensions of their parent. Applying
+		-- blast physics to them can detach or destroy nameplates and armor.
+	elseif not luaobj then
+		return
+	elseif luaobj.name ~= "tnt_revamped:empty_tnt_entity" then
+		local do_damage = true
+		local do_knockback = true
+		local entity_drops = {}
+		local objdef = registered_entities[luaobj.name]
+
+		if objdef and objdef.on_blast then
+			do_damage, do_knockback, entity_drops = objdef.on_blast(luaobj, damage)
+		end
+
+		-- on_blast may remove the object or move it before knockback is applied.
+		obj_pos = obj:get_pos()
+		if obj_pos and do_knockback then
+			local obj_vel = obj:get_velocity()
+			obj:add_velocity(calc_velocity(pos, obj_pos,
+					obj_vel, radius * entity_velocity_mul))
+		end
+
+		if obj_pos and do_damage and (not in_water or (in_water and tnt_damage_entities)) then
+			if not obj:get_armor_groups().immortal then
+				obj:punch(obj, 1.0, {
+					full_punch_interval = 1.0,
+					damage_groups = {fleshy = damage},
+				}, nil)
+			end
+		end
+
+		for _, item in pairs(entity_drops) do
+			add_drop(drops, item)
+		end
+	else
+		luaobj.flow_check_step = 0
+		local obj_vel = obj:get_velocity()
+		obj:add_velocity(calc_velocity(pos, obj_pos, obj_vel, radius * tnt_entity_velocity_mul))
+	end
+end
+
 local function entity_physics(pos, radius, drops, in_water, owner)
 	local hitter = minetest.get_player_by_name(owner)
 	local objs = get_objects_inside_radius(pos, radius)
 	for _, obj in pairs(objs) do
-		local obj_pos = obj:get_pos()
-		local dist = max(1, distance(pos, obj_pos))
-
-		local damage = (4 / dist) * radius
-		if obj:is_player() then
-			local obj_vel = obj:get_velocity()
-			obj:add_velocity(calc_velocity(pos, obj_pos,
-					obj_vel, radius * player_velocity_mul))
-
-			if not in_water or (in_water and tnt_damage_entities) then
-				local hp = obj:get_hp() - damage
-				if hp < 0 then
-					hp = 0
-				end
-				obj:set_hp(hp, {type = "set_hp", object = hitter})
-			end
-		elseif obj:get_attach() then
-			-- Attached entities are visual extensions of their parent. Applying
-			-- blast physics to them can detach or destroy nameplates and armor.
-		elseif obj:get_entity_name() ~= "tnt_revamped:empty_tnt_entity" then
-			local do_damage = true
-			local do_knockback = true
-			local entity_drops = {}
-			local luaobj = obj:get_luaentity()
-			local objdef = luaobj and registered_entities[luaobj.name]
-
-			if objdef and objdef.on_blast then
-				do_damage, do_knockback, entity_drops = objdef.on_blast(luaobj, damage)
-			end
-
-			if do_knockback then
-				local obj_vel = obj:get_velocity()
-				obj:add_velocity(calc_velocity(pos, obj_pos,
-						obj_vel, radius * entity_velocity_mul))
-			end
-
-			if do_damage and (not in_water or (in_water and tnt_damage_entities)) then
-				if not obj:get_armor_groups().immortal then
-					obj:punch(obj, 1.0, {
-						full_punch_interval = 1.0,
-						damage_groups = {fleshy = damage},
-					}, nil)
-				end
-			end
-
-			for _, item in pairs(entity_drops) do
-				add_drop(drops, item)
-			end
-		else
-			obj:get_luaentity().flow_check_step = 0
-			local obj_vel = obj:get_velocity()
-			obj:add_velocity(calc_velocity(pos, obj_pos, obj_vel, radius * tnt_entity_velocity_mul))
-		end
+		apply_entity_physics(obj, pos, radius, drops, in_water, hitter)
 	end
 end
 

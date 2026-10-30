@@ -26,6 +26,7 @@ local regular_loot = {
 
     -- Halloween
     {name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
+    {name = "ffa_halloween:broom", chance = 0.15, max = 1},
 }
 
 local mese_loot = {
@@ -62,7 +63,7 @@ local mese_loot = {
 
     -- Halloween
     {name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
-    {name = "ffa_halloween:broom", chance = 0.20, max = 1},
+    {name = "ffa_halloween:broom", chance = 0.50, max = 1},
 }
 
 local diamond_loot = {
@@ -94,7 +95,7 @@ local diamond_loot = {
 
     -- Halloween
     {name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
-    {name = "ffa_halloween:broom", chance = 0.25, max = 2},
+    {name = "ffa_halloween:broom", chance = 0.80, max = 2},
     {name = "ffa_halloween:helmet_pumpkin", chance = 0.50, max = 1},
 }
 

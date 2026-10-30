@@ -1,6 +1,6 @@
 return function(throwables)
 
-local damage, knockback, lift = 1, 5, 1.4
+local damage, knockback, lift = 1, 7, 1.1
 
 throwables.register_projectile("throwables:thrown_snowball", {
 	speed = 28,
@@ -32,7 +32,7 @@ core.register_craftitem("throwables:snowball", {
 	description = throwables.S("Snowball"),
 	inventory_image = "default_snowball.png",
 	stack_max = 16,
-	_cooldown = 0.4,
+	_cooldown = 0.2,
 	on_use = throwables.use("throwables:thrown_snowball", "throwables_throw"),
 })
 

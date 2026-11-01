@@ -50,9 +50,7 @@ local fire_node = {
 	paramtype = "light",
 	light_source = 13,
 	walkable = false,
-	buildable_to = true,
 	sunlight_propagates = true,
-	floodable = true,
 	pointable = true,
 	damage_per_second = 4,
 	groups = {fire = 1},
@@ -63,6 +61,8 @@ local fire_node = {
 local flame_fire_node = table.copy(fire_node)
 flame_fire_node.description = S("Fire")
 flame_fire_node.pointable = false
+flame_fire_node.buildable_to = true
+flame_fire_node.floodable = true
 flame_fire_node.groups = {fire = 1, dig_immediate = 3, igniter = 2}
 flame_fire_node.on_timer = function(pos)
 	if not core.find_node_near(pos, 1, {"group:flammable"}) then

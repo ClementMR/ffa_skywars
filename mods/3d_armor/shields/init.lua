@@ -96,3 +96,18 @@ if armor.materials.diamond then
 		end,
 	})
 end
+
+armor:register_armor("shields:shield_shadow", {
+	description = core.colorize("#5B21B6", S("Shadow Shield")),
+	inventory_image = "shields_inv_shield_shadow.png",
+	groups = {armor_shield=1, armor_heal=8, armor_use=350},
+	armor_groups = {fleshy=16},
+	damage_groups = {cracky=1, snappy=1, choppy=1, level=3},
+	reciprocate_damage = true,
+	on_damage = function(player, index, stack)
+		play_sound_effect(player, "default_break_glass")
+	end,
+	on_destroy = function(player, index, stack)
+		play_sound_effect(player, "default_break_glass")
+	end,
+})

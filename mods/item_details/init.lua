@@ -103,7 +103,7 @@ end
 
 core.register_on_mods_loaded(function()
 	for name, def in pairs(core.registered_items) do
-		if def.description and def.description ~= "" then
+		if def.description and def.description ~= "" and not name:find("x_obsidianmese") then
 			local details = build_details(name, def)
 			if #details > 0 then
 				core.override_item(name, {

@@ -24,9 +24,7 @@ local regular_loot = {
     {name = "3d_armor:boots_steel", chance = 0.16, max = 1},
     {name = "shields:shield_steel", chance = 0.18, max = 1},
 
-    -- Halloween
-    --{name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
-    --{name = "ffa_halloween:broom", chance = 0.15, max = 1},
+    {name = "x_obsidianmese:sword", chance = 0.001, max = 1},
 }
 
 local mese_loot = {
@@ -41,7 +39,7 @@ local mese_loot = {
     {name = "default:axe_mese", chance = 0.13, max = 1},
     {name = "ctf_ranged:rifle_loaded", chance = 0.18, max = 1},
     {name = "ctf_ranged:ammo", chance = 0.25, min = 1, max = 4},
-    {name = "fire:flint_and_steel", chance = 0.15, max = 1},
+    {name = "fire:flint_and_steel", chance = 0.30, max = 1},
     {name = "tnt:tnt", chance = 0.25, min = 1, max = 3},
 
     {name = "3d_armor:helmet_bronze", chance = 0.22, max = 1},
@@ -58,12 +56,9 @@ local mese_loot = {
     -- Mobility and keys
     {name = "throwables:wind_pearl", chance = 0.25, min = 1, max = 2},
     {name = "throwables:ender_pearl", chance = 0.12, min = 1, max = 2},
+    {name = "ffa_halloween:broom", chance = 0.10, max = 1},
     {name = "ffa_loot:diamond_key", chance = 0.05, max = 1},
-    {name = "ffa_boss:golden_ticket", chance = 0.01, max = 1},
-
-    -- Halloween
-    --{name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
-    --{name = "ffa_halloween:broom", chance = 0.50, max = 1},
+    {name = "ffa_boss:golden_ticket", chance = 0.0001, max = 1},
 }
 
 local diamond_loot = {
@@ -87,17 +82,16 @@ local diamond_loot = {
 
     -- Lifesavers
     {name = "skywars:golden_apple", chance = 0.15, max = 2},
-    {name = "skywars:sword_shadow", chance = 0.02, max = 1},
+    {name = "skywars:sword_shadow", chance = 0.06, max = 1},
     {name = "3d_armor:helmet_shadow", chance = 0.02, max = 1},
     {name = "3d_armor:chestplate_shadow", chance = 0.01, max = 1},
     {name = "3d_armor:leggings_shadow", chance = 0.02, max = 1},
     {name = "3d_armor:boots_shadow", chance = 0.02, max = 1},
+    {name = "shields:shield_shadow", chance = 0.02, max = 1},
     {name = "skywars:totem_of_undying", chance = 0.05, max = 1},
 
-    -- Halloween
-    --{name = "ffa_halloween:cursed_pumpkin", chance = 0.40, max = 1},
-    --{name = "ffa_halloween:broom", chance = 0.80, max = 2},
-    --{name = "ffa_halloween:helmet_pumpkin", chance = 0.50, max = 1},
+    {name = "ffa_halloween:broom", chance = 0.80, max = 2},
+    {name = "x_obsidianmese:sword_engraved", chance = 0.04, max = 1},
 }
 
 local REGULAR_CHEST = 30

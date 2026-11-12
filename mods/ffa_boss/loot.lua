@@ -14,6 +14,7 @@ local rewards = {
     {name = "3d_armor:leggings_diamond", min = 1, max = 1, weight = 1},
     {name = "shields:shield_diamond", min = 1, max = 1, weight = 1},
     {name = "3d_armor:boots_shadow", min = 1, max = 1, weight = 1},
+    {name = "shields:shield_shadow", min = 1, max = 1, weight = 1},
 }
 
 local function reward_pool()

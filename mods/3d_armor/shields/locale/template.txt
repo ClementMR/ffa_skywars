@@ -7,6 +7,7 @@ Enhanced Cactus Shield=
 Steel Shield=
 Bronze Shield=
 Diamond Shield=
+Shadow Shield=
 Gold Shield=
 Mithril Shield=
 Crystal Shield=

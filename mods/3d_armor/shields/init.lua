@@ -30,7 +30,7 @@ if armor.materials.steel then
 	armor:register_armor("shields:shield_steel", {
 		description = S("Steel Shield"),
 		inventory_image = "shields_inv_shield_steel.png",
-		groups = {armor_shield=1, armor_heal=1, armor_use=950},
+		groups = {armor_shield=1, armor_heal=0, armor_use=950},
 		armor_groups = {fleshy=10.5},
 		damage_groups = {cracky=2, snappy=3, choppy=2, crumbly=1, level=2},
 		reciprocate_damage = true,
@@ -48,7 +48,7 @@ if armor.materials.bronze then
 	armor:register_armor("shields:shield_bronze", {
 		description = S("Bronze Shield"),
 		inventory_image = "shields_inv_shield_bronze.png",
-		groups = {armor_shield=1, armor_heal=3, armor_use=1100},
+		groups = {armor_shield=1, armor_heal=0, armor_use=1100},
 		armor_groups = {fleshy=11.5},
 		damage_groups = {cracky=2, snappy=3, choppy=2, crumbly=1, level=2},
 		reciprocate_damage = true,
@@ -66,7 +66,7 @@ if armor.materials.gold then
 	armor:register_armor("shields:shield_gold", {
 		description = S("Gold Shield"),
 		inventory_image = "shields_inv_shield_gold.png",
-		groups = {armor_shield=1, armor_heal=4, armor_use=1500},
+		groups = {armor_shield=1, armor_heal=0, armor_use=1500},
 		armor_groups = {fleshy=12},
 		damage_groups = {cracky=1, snappy=2, choppy=2, crumbly=3, level=2},
 		reciprocate_damage = true,
@@ -84,7 +84,7 @@ if armor.materials.diamond then
 	armor:register_armor("shields:shield_diamond", {
 		description = S("Diamond Shield"),
 		inventory_image = "shields_inv_shield_diamond.png",
-		groups = {armor_shield=1, armor_heal=7, armor_use=650},
+		groups = {armor_shield=1, armor_heal=0, armor_use=650},
 		armor_groups = {fleshy=14.5},
 		damage_groups = {cracky=2, snappy=1, choppy=1, level=3},
 		reciprocate_damage = true,
@@ -100,7 +100,7 @@ end
 armor:register_armor("shields:shield_shadow", {
 	description = core.colorize("#5B21B6", S("Shadow Shield")),
 	inventory_image = "shields_inv_shield_shadow.png",
-	groups = {armor_shield=1, armor_heal=8, armor_use=350},
+	groups = {armor_shield=1, armor_heal=6, armor_use=350},
 	armor_groups = {fleshy=16},
 	damage_groups = {cracky=1, snappy=1, choppy=1, level=3},
 	reciprocate_damage = true,

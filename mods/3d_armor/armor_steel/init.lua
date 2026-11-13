@@ -14,7 +14,7 @@ if armor.materials.steel then
 	armor:register_armor(":3d_armor:chestplate_steel", {
 		description = S("Steel Chestplate"),
 		inventory_image = "3d_armor_inv_chestplate_steel.png",
-		groups = {armor_torso=1, armor_heal=0, armor_use=950,
+		groups = {armor_torso=1, armor_heal=1, armor_use=950,
 			physics_speed=-0.04, physics_gravity=0.04},
 		armor_groups = {fleshy=11},
 		damage_groups = {cracky=2, snappy=3, choppy=2, crumbly=1, level=2},

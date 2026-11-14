@@ -63,16 +63,16 @@ local mese_loot = {
 
 local diamond_loot = {
     {name = "skywars:wool_blue", chance = 1.00, min = 10, max = 20},
-    {name = "farming:bread", chance = 0.85, min = 4, max = 6},
-    {name = "default:apple", chance = 0.30, min = 2, max = 5},
+    {name = "farming:bread", chance = 0.85, min = 8, max = 12},
+    {name = "default:apple", chance = 0.30, min = 14, max = 18},
 
     {name = "default:sword_diamond", chance = 0.35, max = 1},
     {name = "default:axe_diamond", chance = 0.14, max = 1},
     {name = "ctf_ranged:smg_loaded", chance = 0.30, max = 1},
     {name = "ctf_ranged:shotgun_loaded", chance = 0.30, max = 1},
 
-    {name = "throwables:ender_pearl", chance = 0.30, min = 1, max = 3},
-    {name = "throwables:wind_pearl", chance = 0.35, min = 1, max = 3},
+    {name = "throwables:ender_pearl", chance = 0.30, min = 3, max = 6},
+    {name = "throwables:wind_pearl", chance = 0.35, min = 6, max = 12},
 
     {name = "3d_armor:helmet_diamond", chance = 0.20, max = 1},
     {name = "3d_armor:chestplate_diamond", chance = 0.12, max = 1},
@@ -88,9 +88,9 @@ local diamond_loot = {
     {name = "3d_armor:leggings_shadow", chance = 0.02, max = 1},
     {name = "3d_armor:boots_shadow", chance = 0.02, max = 1},
     {name = "shields:shield_shadow", chance = 0.02, max = 1},
-    {name = "skywars:totem_of_undying", chance = 0.05, max = 1},
+    {name = "skywars:totem_of_undying", chance = 0.05, min = 2, max = 1},
 
-    {name = "ffa_halloween:broom", chance = 0.80, max = 2},
+    {name = "ffa_halloween:broom", chance = 0.80, max = 4},
     {name = "x_obsidianmese:sword_engraved", chance = 0.04, max = 1},
 }
 
@@ -276,20 +276,14 @@ local function chest_opened(pos)
 end
 
 local function has_key(clicker, pos)
-    local stack = ItemStack("ffa_loot:diamond_key")
-    local name = clicker:get_player_name()
-    local wielded_item = clicker:get_wielded_item()
-    if wielded_item == stack then
-        return true
-    end
-
-    return false
+    return clicker:get_wielded_item():get_name() == "ffa_loot:diamond_key"
 end
 
 local function remove_key(clicker)
-    if not core.is_creative_enabled(clicker:get_player_name()) then
-        clicker:set_wielded_item("")
+    if core.is_creative_enabled(clicker:get_player_name()) then
+        return
     end
+    clicker:set_wielded_item("")
 end
 
 local function update_diamond_chest(pos, elapsed)
@@ -403,10 +397,14 @@ local function register_diamond_chest(nodename, d)
         repair_diamond_chest(pos, node)
         local cn = clicker:get_player_name()
         local meta = core.get_meta(pos)
-        local is_opened = chest_opened(pos)
 
-        if not is_opened and has_key(clicker, pos) then
-            core.after(0, remove_key, clicker)
+        if not has_key(clicker, pos) then
+            core.chat_send_player(cn, S("You need a @1 to open this chest.", core.colorize("#12e8ec", S("Diamond Key"))))
+            return
+        end
+
+        core.after(0, function()
+            remove_key(clicker)
             fill_chest_random(pos, diamond_loot, "diamond")
             meta:set_int("timer", DIAMOND_CHEST)
             meta:set_string("infotext", S("@1, Closing in @2s", S("Diamond Chest"), DIAMOND_CHEST))
@@ -419,9 +417,7 @@ local function register_diamond_chest(nodename, d)
             core.show_formspec(cn, "ffa_loot:diamond_chest", default.chest.get_chest_formspec(pos))
 
             diamond_chest_opened[cn] = pos
-        else
-            core.chat_send_player(cn, S("You need a @1 to open this chest.", core.colorize("#12e8ec", S("Diamond Key"))))
-        end
+        end)
     end
 
 	def_closed.mesh = nil

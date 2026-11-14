@@ -3,7 +3,7 @@ local S = core.get_translator(core.get_current_modname())
 core.register_tool("skywars:sword_shadow", {
     description = core.colorize("#27272A", S("Shadow Sword")),
     inventory_image = "skywars_shadow_sword.png",
-    wield_scale = {x = 1.2, y = 1, z = 1},
+    wield_scale = {x = 1.4, y = 1.4, z = 1},
     range = 5.0,
     tool_capabilities = {
         full_punch_interval = 0.6,
@@ -18,6 +18,6 @@ core.register_tool("skywars:sword_shadow", {
 
 if core.get_modpath("visible_wielditem") then
 	visible_wielditem.item_tweaks["groups"]["sword_shadow"] = {
-		scale = 1.25
+		scale = 1.4
 	}
 end

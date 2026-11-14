@@ -43,16 +43,29 @@ core.register_on_joinplayer(function(player)
     })
 end)
 
+local function spread_pos(player)
+    local pos = player:get_pos()
+
+    local angle = math.random() * 2 * math.pi
+    local r = 2 * math.sqrt(math.random())
+
+    return vector.new(
+        pos.x + r * math.cos(angle),
+        pos.y + 1,
+        pos.z + r * math.sin(angle)
+    )
+end
+
 core.register_on_dieplayer(function(player)
     if core.is_creative_enabled(player:get_player_name()) then
         return
     end
 
     local player_inv = player:get_inventory()
-    for _, list in ipairs({"main", "craft", "totem"}) do
+    for _, list in ipairs({"main", "craft"}) do
         for _, stack in ipairs(player_inv:get_list(list) or {}) do
             if not stack:is_empty() then
-                core.add_item(player:get_pos(), stack)
+                core.add_item(spread_pos(player), stack)
                 player_inv:remove_item(list, stack)
             end
         end
